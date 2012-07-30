@@ -1,0 +1,18 @@
+Designed fuer Atmega8 (with external crystal with 16MHz)
+^^^^^^^^^^^^^^^^^^^^^
+
+--> avrdude -p m8 -c pony-stk200 -e -U flash:w:bootloaderfirmware.hex <--
+
+USB-Schematics wie in VUSB mit ZenerDiode
+
+USBD+ (gruen) --> PIN4  (PD2)
+USBD- (weiss) --> PIN12 (AIN0)
+
+TASTER        --> PIN13 (AIN1)
+
+Wenn RESET/PowerUP UND Taster gedrueckt (PIN13 LOW) dann startet Bootloader
+bis -->erste<-- Programmierung beendet und wieder TASTER gedrueckt
+
+empfohlene LFUSE: 0x9f
+empfohlene HFUSE: 0xc0
+empfohlene LOCK : 0x3f (unveraendert - bootsection wird per software geschuetzt)
