@@ -10,8 +10,10 @@ USBD- (weiss) --> PIN12 (AIN0)
 
 TASTER        --> PIN13 (AIN1)
 
-Wenn RESET/PowerUP UND Taster gedrueckt (PIN13 LOW) dann startet Bootloader
-bis -->erste<-- Programmierung beendet und wieder TASTER gedrueckt
+Wenn RESET/PowerUP UND Taster gedrueckt (PIN13 LOW) dann startet Bootloader.
+Wenn dieser Taster nach dem ersten loslassen erneu gedrueckt wird beendet
+sich der Loader nach Fertigstellung ggf. noch offener Operationen und
+startet die programmierte Firmware.
 
 empfohlene LFUSE: 0x9f
 empfohlene HFUSE: 0xc0
