@@ -168,12 +168,14 @@ static uchar    replyBuffer[4];
             rval = rq->wIndex.bytes[0] & 3;
             rval = signatureBytes[rval];
 #if HAVE_READ_LOCK_FUSE
+#if defined (__AVR_ATmega8__)
         }else if(rq->wValue.bytes[0] == 0x58 && rq->wValue.bytes[1] == 0x00){  /* read lock bits */
             rval = boot_lock_fuse_bits_get(GET_LOCK_BITS);
         }else if(rq->wValue.bytes[0] == 0x50 && rq->wValue.bytes[1] == 0x00){  /* read lfuse bits */
             rval = boot_lock_fuse_bits_get(GET_LOW_FUSE_BITS);
         }else if(rq->wValue.bytes[0] == 0x58 && rq->wValue.bytes[1] == 0x08){  /* read hfuse bits */
             rval = boot_lock_fuse_bits_get(GET_HIGH_FUSE_BITS);
+#endif
 #endif
 #if HAVE_EEPROM_BYTE_ACCESS
         }else if(rq->wValue.bytes[0] == 0xa0){  /* read EEPROM byte */
