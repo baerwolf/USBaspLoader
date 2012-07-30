@@ -42,7 +42,11 @@ these macros are defined, the boot loader usees them.
 /* This is the port where the USB bus is connected. When you configure it to
  * "B", the registers PORTB, PINB and DDRB will be used.
  */
-#define USB_CFG_DMINUS_BIT      4
+#define JUMPER_BIT		7	/* old value was 0 */
+/* 
+ * jumper is connected to this bit in port D, active low
+ */
+#define USB_CFG_DMINUS_BIT      6	/* old value was 4 */
 /* This is the bit number in USB_CFG_IOPORT where the USB D- line is connected.
  * This may be any bit in the port.
  */
@@ -77,6 +81,18 @@ these macros are defined, the boot loader usees them.
 /* ---------------------- feature / code size options ---------------------- */
 /* ------------------------------------------------------------------------- */
 
+#define HAVE_READ_LOCK_FUSE	    1
+/*
+ * enable the loaders capability to load its lfuse, hfuse and lockbits
+ * ...However, programming of these is prohibited...
+ */
+
+#define HAVE_BLB11_SOFTW_LOCKBIT    1
+/*
+ * The IC itself do not need to prgra BLB11, but the bootloader will avaoid 
+ * to erase itself from the bootregion
+ */
+
 #define HAVE_EEPROM_PAGED_ACCESS    1
 /* If HAVE_EEPROM_PAGED_ACCESS is defined to 1, page mode access to EEPROM is
  * compiled in. Whether page mode or byte mode access is used by AVRDUDE
@@ -90,7 +106,7 @@ these macros are defined, the boot loader usees them.
  * signature) does not support page mode for EEPROM. It is required for
  * accessing the EEPROM on the ATMega8. Costs ~54 bytes.
  */
-#define BOOTLOADER_CAN_EXIT         1
+#define BOOTLOADER_CAN_EXIT         0
 /* If this macro is defined to 1, the boot loader will exit shortly after the
  * programmer closes the connection to the device. Costs ~36 bytes.
  */
@@ -132,8 +148,6 @@ these macros are defined, the boot loader usees them.
 
 #ifndef __ASSEMBLER__   /* assembler cannot parse function definitions */
 
-#define JUMPER_BIT  7   /* jumper is connected to this bit in port D, active low */
-
 #ifndef MCUCSR          /* compatibility between ATMega8 and ATMega88 */
 #   define MCUCSR   MCUSR
 #endif
@@ -141,8 +155,9 @@ these macros are defined, the boot loader usees them.
 static inline void  bootLoaderInit(void)
 {
     PORTD |= (1 << JUMPER_BIT);     /* activate pull-up */
-    if(!(MCUCSR & (1 << EXTRF)))    /* If this was not an external reset, ignore */
-        leaveBootloader();
+//     deactivated by Stephan - reset after each avrdude op is annoing!
+//     if(!(MCUCSR & (1 << EXTRF)))    /* If this was not an external reset, ignore */
+//         leaveBootloader();
     MCUCSR = 0;                     /* clear all reset flags for next time */
 }
 
@@ -151,7 +166,7 @@ static inline void  bootLoaderExit(void)
     PORTD = 0;                      /* undo bootLoaderInit() changes */
 }
 
-#define bootLoaderCondition()   ((PIND & (1 << JUMPER_BIT)) == 0)
+#define bootLoaderCondition()		((PIND & (1 << JUMPER_BIT)) == 0)
 
 #endif /* __ASSEMBLER__ */
 

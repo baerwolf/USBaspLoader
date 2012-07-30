@@ -15,12 +15,21 @@
 #include <avr/boot.h>
 #include <avr/eeprom.h>
 #include <util/delay.h>
+
+#include <avr/cpufunc.h>
+
 #include <string.h>
+
+
 
 static void leaveBootloader() __attribute__((__noreturn__));
 
 #include "bootloaderconfig.h"
 #include "usbdrv/usbdrv.c"
+
+#ifndef BOOTLOADER_ADDRESS
+  #error need to know the bootloaders flash address!
+#endif
 
 /* ------------------------------------------------------------------------ */
 
@@ -85,14 +94,20 @@ typedef union longConverter{
     uchar   b[sizeof(addr_t)];
 }longConverter_t;
 
-static uchar            requestBootLoaderExit;
-static longConverter_t  currentAddress; /* in bytes */
-static uchar            bytesRemaining;
-static uchar            isLastPage;
+
+
+#if BOOTLOADER_CAN_EXIT
+static uchar            	requestBootLoaderExit;
+#endif
+static volatile unsigned char	stayinloader = 1;
+
+static longConverter_t  	currentAddress; /* in bytes */
+static uchar            	bytesRemaining;
+static uchar            	isLastPage;
 #if HAVE_EEPROM_PAGED_ACCESS
-static uchar            currentRequest;
+static uchar            	currentRequest;
 #else
-static const uchar      currentRequest = 0;
+static const uchar      	currentRequest = 0;
 #endif
 
 static const uchar  signatureBytes[4] = {
@@ -120,8 +135,9 @@ static void (*nullVector)(void) __attribute__((__noreturn__));
 static void leaveBootloader()
 {
     DBG1(0x01, 0, 0);
-    bootLoaderExit();
     cli();
+    usbDeviceDisconnect();
+    bootLoaderExit();
     USB_INTR_ENABLE = 0;
     USB_INTR_CFG = 0;       /* also reset config bits */
     GICR = (1 << IVCE);     /* enable change of interrupt vectors */
@@ -151,6 +167,14 @@ static uchar    replyBuffer[4];
         if(rq->wValue.bytes[0] == 0x30){        /* read signature */
             rval = rq->wIndex.bytes[0] & 3;
             rval = signatureBytes[rval];
+#if HAVE_READ_LOCK_FUSE
+        }else if(rq->wValue.bytes[0] == 0x58 && rq->wValue.bytes[1] == 0x00){  /* read lock bits */
+            rval = boot_lock_fuse_bits_get(GET_LOCK_BITS);
+        }else if(rq->wValue.bytes[0] == 0x50 && rq->wValue.bytes[1] == 0x00){  /* read lfuse bits */
+            rval = boot_lock_fuse_bits_get(GET_LOW_FUSE_BITS);
+        }else if(rq->wValue.bytes[0] == 0x58 && rq->wValue.bytes[1] == 0x08){  /* read hfuse bits */
+            rval = boot_lock_fuse_bits_get(GET_HIGH_FUSE_BITS);
+#endif
 #if HAVE_EEPROM_BYTE_ACCESS
         }else if(rq->wValue.bytes[0] == 0xa0){  /* read EEPROM byte */
             rval = eeprom_read_byte((void *)address.word);
@@ -194,9 +218,11 @@ static uchar    replyBuffer[4];
 #endif
             len = 0xff; /* hand over to usbFunctionRead() / usbFunctionWrite() */
         }
-#if BOOTLOADER_CAN_EXIT
+
     }else if(rq->bRequest == USBASP_FUNC_DISCONNECT){
-        requestBootLoaderExit = 1;      /* allow proper shutdown/close of connection */
+      stayinloader	    = 0;
+#if BOOTLOADER_CAN_EXIT
+      requestBootLoaderExit = 1;      /* allow proper shutdown/close of connection */
 #endif
     }else{
         /* ignore: USBASP_FUNC_CONNECT */
@@ -225,24 +251,39 @@ uchar   isLast;
             if((currentAddress.w[0] & (SPM_PAGESIZE - 1)) == 0){    /* if page start: erase */
                 DBG1(0x33, 0, 0);
 #   ifndef NO_FLASH_WRITE
+#   	if HAVE_BLB11_SOFTW_LOCKBIT
+		if (CURRENT_ADDRESS < (addr_t)(BOOTLOADER_ADDRESS)) {
+#   	endif
                 cli();
                 boot_page_erase(CURRENT_ADDRESS);   /* erase page */
                 sei();
                 boot_spm_busy_wait();               /* wait until page is erased */
+#   	if HAVE_BLB11_SOFTW_LOCKBIT
+		}
+#   	endif		
 #   endif
             }
 #endif
             i += 2;
             DBG1(0x32, 0, 0);
+#   	if HAVE_BLB11_SOFTW_LOCKBIT
+	    if (CURRENT_ADDRESS < (addr_t)(BOOTLOADER_ADDRESS)) {
+#   	endif
             cli();
             boot_page_fill(CURRENT_ADDRESS, *(short *)data);
             sei();
+#   	if HAVE_BLB11_SOFTW_LOCKBIT
+	    }
+#   	endif
             CURRENT_ADDRESS += 2;
             data += 2;
             /* write page when we cross page boundary or we have the last partial page */
             if((currentAddress.w[0] & (SPM_PAGESIZE - 1)) == 0 || (isLast && i >= len && isLastPage)){
                 DBG1(0x34, 0, 0);
 #ifndef NO_FLASH_WRITE
+#   	if HAVE_BLB11_SOFTW_LOCKBIT
+		if ((CURRENT_ADDRESS - (addr_t)2) < (addr_t)(BOOTLOADER_ADDRESS)) {
+#   	endif
                 cli();
                 boot_page_write(CURRENT_ADDRESS - 2);
                 sei();
@@ -250,6 +291,9 @@ uchar   isLast;
                 cli();
                 boot_rww_enable();
                 sei();
+#   	if HAVE_BLB11_SOFTW_LOCKBIT
+		}
+#   	endif
 #endif
             }
         }
@@ -306,7 +350,9 @@ int __attribute__((noreturn)) main(void)
     GICR = (1 << IVSEL); /* move interrupts to boot flash section */
 #endif
     if(bootLoaderCondition()){
+#if BOOTLOADER_CAN_EXIT
         uchar i = 0, j = 0;
+#endif
         initForUsbConnectivity();
         do{
             usbPoll();
@@ -318,7 +364,7 @@ int __attribute__((noreturn)) main(void)
                 }
             }
 #endif
-        }while(bootLoaderCondition());  /* main event loop */
+        }while ((stayinloader) || (!bootLoaderCondition()));  /* main event loop */
     }
     leaveBootloader();
 }
