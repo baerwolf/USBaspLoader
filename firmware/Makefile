@@ -155,7 +155,7 @@ main.bin:	$(OBJECTS)
 main.hex:	main.bin
 	rm -f main.hex main.eep.hex
 	avr-objcopy -j .text -j .data -O ihex main.bin main.hex
-	avr-size main.hex
+	avr-size main.bin
 
 disasm:	main.bin
 	avr-objdump -d main.bin
