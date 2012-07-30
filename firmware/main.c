@@ -222,12 +222,14 @@ static uchar    replyBuffer[4];
         }
 
     }else if(rq->bRequest == USBASP_FUNC_DISCONNECT){
-      stayinloader	    = 0;
+      stayinloader	   &= (0x7f);
 #if BOOTLOADER_CAN_EXIT
       requestBootLoaderExit = 1;      /* allow proper shutdown/close of connection */
 #endif
+    }else if(rq->bRequest == USBASP_FUNC_CONNECT){
+      stayinloader	   |= (0x80);
     }else{
-        /* ignore: USBASP_FUNC_CONNECT */
+        /* ignore: others */
     }
     return len;
 }
@@ -366,7 +368,17 @@ int __attribute__((noreturn)) main(void)
                 }
             }
 #endif
-        }while ((stayinloader) || (!bootLoaderCondition()));  /* main event loop */
+	if (stayinloader & 0x1) {
+	  if (!bootLoaderCondition()) {
+	    stayinloader = (stayinloader & 0xfc) | 0x2;
+	  } 
+	} else {
+	  if (bootLoaderCondition()) {
+	    stayinloader &= 0xfc;
+	  }
+	}
+
+        }while (stayinloader);  /* main event loop */
     }
     leaveBootloader();
 }
