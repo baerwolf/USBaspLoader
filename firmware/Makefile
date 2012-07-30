@@ -15,13 +15,13 @@
 #     make lock    # to protect the boot loader from overwriting
 
 F_CPU = 16000000
-DEVICE = atmega168
+DEVICE = atmega8
 # BOOTLOADER_ADDRESS is 1800 for 8k devices, 3800 for 16k and 7800 for 32k.
-BOOTLOADER_ADDRESS = 3800
-FUSEOPT = $(FUSEOPT_168)
+BOOTLOADER_ADDRESS = 1800
+FUSEOPT = $(FUSEOPT_8)
 LOCKOPT = -U lock:w:0x2f:m
 
-PROGRAMMER = -c stk500v2 -P avrdoper
+PROGRAMMER = -c pony-stk200
 # PROGRAMMER contains AVRDUDE options to address your programmer
 
 FUSEOPT_8 = -U hfuse:w:0xc0:m -U lfuse:w:0x9f:m
@@ -100,13 +100,13 @@ FUSEOPT_328 = -U lfuse:w:0xf7:m -U hfuse:w:0xda:m -U efuse:w:0x03:m
 ###############################################################################
 
 # Tools:
-AVRDUDE = avrdude $(PROGRAMMER) -p $(DEVICE)
+AVRDUDE = @echo avrdude $(PROGRAMMER) -p $(DEVICE)
 CC = avr-gcc
 
 # Options:
 DEFINES = #-DDEBUG_LEVEL=2
 # Remove the -fno-* options when you use gcc 3, it does not understand them
-CFLAGS = -Wall -Os -fno-move-loop-invariants -fno-tree-scev-cprop -fno-inline-small-functions -I. -mmcu=$(DEVICE) -DF_CPU=$(F_CPU) $(DEFINES)
+CFLAGS = -Wall -Os -fno-move-loop-invariants -fno-tree-scev-cprop -fno-inline-small-functions -I. -mmcu=$(DEVICE) -DBOOTLOADER_ADDRESS=0x$(BOOTLOADER_ADDRESS) -DF_CPU=$(F_CPU) $(DEFINES)
 LDFLAGS = -Wl,--relax,--gc-sections -Wl,--section-start=.text=$(BOOTLOADER_ADDRESS)
 
 OBJECTS =  usbdrv/usbdrvasm.o usbdrv/oddebug.o main.o
@@ -141,6 +141,9 @@ lock:
 
 read_fuses:
 	$(UISP) --rd_fuses
+
+deepclean: clean
+	rm -f *~
 
 clean:
 	rm -f main.hex main.bin *.o usbdrv/*.o main.s usbdrv/oddebug.s usbdrv/usbdrv.s
