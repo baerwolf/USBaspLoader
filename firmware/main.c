@@ -251,48 +251,36 @@ uchar   isLast;
         uchar i;
         for(i = 0; i < len;){
 #if HAVE_BLB11_SOFTW_LOCKBIT
-	    uint8_t allowWrite = (CURRENT_ADDRESS < (addr_t)(BOOTLOADER_ADDRESS));
+	    if (CURRENT_ADDRESS >= (addr_t)(BOOTLOADER_ADDRESS)) {
 #if HAVE_BLB11_SOFTW_BACKDOOR
-	    if ((stayinloader >= 0x10) && (bootLoaderCondition())) allowWrite=1;
+	      if (!((stayinloader >= 0x10) && (bootLoaderCondition()))) return 1;
+#else
+	      return 1;
 #endif
+	    }
 #endif
 #if !HAVE_CHIP_ERASE
             if((currentAddress.w[0] & (SPM_PAGESIZE - 1)) == 0){    /* if page start: erase */
                 DBG1(0x33, 0, 0);
 #   ifndef NO_FLASH_WRITE
-#   	if HAVE_BLB11_SOFTW_LOCKBIT
-		if (allowWrite) {
-#   	endif
                 cli();
                 boot_page_erase(CURRENT_ADDRESS);   /* erase page */
                 sei();
                 boot_spm_busy_wait();               /* wait until page is erased */
-#   	if HAVE_BLB11_SOFTW_LOCKBIT
-		}
-#   	endif		
 #   endif
             }
 #endif
             i += 2;
             DBG1(0x32, 0, 0);
-#   	if HAVE_BLB11_SOFTW_LOCKBIT
-	    if (allowWrite) {
-#   	endif
             cli();
             boot_page_fill(CURRENT_ADDRESS, *(short *)data);
             sei();
-#   	if HAVE_BLB11_SOFTW_LOCKBIT
-	    }
-#   	endif
             CURRENT_ADDRESS += 2;
             data += 2;
             /* write page when we cross page boundary or we have the last partial page */
             if((currentAddress.w[0] & (SPM_PAGESIZE - 1)) == 0 || (isLast && i >= len && isLastPage)){
                 DBG1(0x34, 0, 0);
 #ifndef NO_FLASH_WRITE
-#   	if HAVE_BLB11_SOFTW_LOCKBIT
-		if (allowWrite) {
-#   	endif
                 cli();
                 boot_page_write(CURRENT_ADDRESS - 2);
                 sei();
@@ -300,9 +288,6 @@ uchar   isLast;
                 cli();
                 boot_rww_enable();
                 sei();
-#   	if HAVE_BLB11_SOFTW_LOCKBIT
-		}
-#   	endif
 #endif
             }
         }
