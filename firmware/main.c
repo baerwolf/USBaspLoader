@@ -95,6 +95,39 @@ typedef union longConverter{
 }longConverter_t;
 
 
+#if HAVE_STMOPCODE_TUNNELCMD
+#if HAVE_BLB11_SOFTW_BACKDOOR
+  const uint16_t bootloader__do_spm[12] PROGMEM = {0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
+#else
+/*
+do_spm:
+;input:	spmcrval determines SPM action
+;disable interrupts if enabled, store status
+;temp1 will be register:	r7
+;temp2 will be register:	r8
+;spmcrval will be register:	r9
+
+in	temp2, SREG	; --> has to be done before calling
+cli			; --> has to be done before calling
+			;check for previous SPM complete
+wait:
+in	temp1, SPMCR
+sbrc	temp1, SPMEN
+rjmp	wait
+			;SPM timed sequence
+out	SPMCR, spmcrval
+spm
+			;restore SREG (to enable interrupts if originally enabled)
+out	SREG, temp2
+ret
+*/ 
+#if defined (__AVR_ATmega8__)
+  const uint16_t bootloader__do_spm[12] PROGMEM = {0xb68f , 0x94f8, 0xb677, 0xfc70, 0xcffd, 0xbe97, 0x95e8, 0xbe8f, 0x9508, 0x00, 0xFFFF, 0xFFFF};#else
+  #error "bootloader__do_spm has to be adapted, since there is no guaranty for SREG==0x3f, SPMCR==0x37, SPMEN==0x00"
+#endif
+#endif
+#endif
+
 
 #if BOOTLOADER_CAN_EXIT
 static uchar            	requestBootLoaderExit;
