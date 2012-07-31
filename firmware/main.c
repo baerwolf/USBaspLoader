@@ -95,7 +95,7 @@ typedef union longConverter{
 }longConverter_t;
 
 
-#if HAVE_STMOPCODE_TUNNELCMD
+#if HAVE_DOSPM_TUNNELCMD
 #if HAVE_BLB11_SOFTW_BACKDOOR
   const uint16_t bootloader__do_spm[12] PROGMEM = {0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
 #else

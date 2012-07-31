@@ -95,10 +95,43 @@ these macros are defined, the boot loader usees them.
 
 #define HAVE_BLB11_SOFTW_BACKDOOR    1
 /*
- * When "HAVE_BLB11_SOFTW_LOCKBIT" is enabled, this backdor will allow writing
+ * When "HAVE_BLB11_SOFTW_LOCKBIT" is enabled, this backdoor will allow writing
  * to the BLS while JUMPER stays low. (keeps be pressed)
  * If JUMPER is released (and after a short debouncing period) repressing it
  * will have NO affect on disabling the writelock.
+ */
+
+#define HAVE_DOSPM_TUNNELCMD	    1
+/*
+ * When enabled, "HAVE_DOSPM_TUNNELCMD" will implement an PROGMEM ARRAY 
+ * with up to 12 opcodes within BLS.
+ * This array will be called "bootloader__do_spm", and implements the 
+ * "do_spm" subroutine from atmels "Instruction Set Manual" Rev.0856I, page 140.
+ * If additionally "HAVE_BLB11_SOFTW_BACKDOOR" is enabled, the array will just
+ * contain "NOP()" instructions, since other code can be flashed into via
+ * backdoor.
+ * 
+do_spm:
+;input:	spmcrval determines SPM action
+;disable interrupts if enabled, store status
+;temp1 will be register:	r7
+;temp2 will be register:	r8
+;spmcrval will be register:	r9
+
+in	temp2, SREG	; --> has to be done before calling
+cli			; --> has to be done before calling
+			;check for previous SPM complete
+wait:
+in	temp1, SPMCR
+sbrc	temp1, SPMEN
+rjmp	wait
+			;SPM timed sequence
+out	SPMCR, spmcrval
+spm
+			;restore SREG (to enable interrupts if originally enabled)
+out	SREG, temp2
+ret
+ * 
  */
 
 #define HAVE_EEPROM_PAGED_ACCESS    1
