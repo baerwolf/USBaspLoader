@@ -104,7 +104,7 @@ these macros are defined, the boot loader usees them.
 #define HAVE_DOSPM_TUNNELCMD	    1
 /*
  * When enabled, "HAVE_DOSPM_TUNNELCMD" will implement an PROGMEM ARRAY 
- * with up to 12 opcodes within BLS.
+ * with up to 13 opcodes within BLS.
  * This array will be called "bootloader__do_spm", and implements the 
  * "do_spm" subroutine from atmels "Instruction Set Manual" Rev.0856I, page 140.
  * If additionally "HAVE_BLB11_SOFTW_BACKDOOR" is enabled, the array will just
