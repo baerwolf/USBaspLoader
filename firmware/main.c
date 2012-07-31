@@ -99,7 +99,7 @@ typedef union longConverter{
 #if BOOTLOADER_CAN_EXIT
 static uchar            	requestBootLoaderExit;
 #endif
-static volatile unsigned char	stayinloader = 1;
+static volatile unsigned char	stayinloader = 0xfe;
 
 static longConverter_t  	currentAddress; /* in bytes */
 static uchar            	bytesRemaining;
@@ -222,12 +222,12 @@ static uchar    replyBuffer[4];
         }
 
     }else if(rq->bRequest == USBASP_FUNC_DISCONNECT){
-      stayinloader	   &= (0x7f);
+      stayinloader	   &= (0xfe);
 #if BOOTLOADER_CAN_EXIT
       requestBootLoaderExit = 1;      /* allow proper shutdown/close of connection */
 #endif
     }else if(rq->bRequest == USBASP_FUNC_CONNECT){
-      stayinloader	   |= (0x80);
+      stayinloader	   |= (0x01);
     }else{
         /* ignore: others */
     }
@@ -368,13 +368,13 @@ int __attribute__((noreturn)) main(void)
                 }
             }
 #endif
-	if (stayinloader & 0x1) {
+	if (stayinloader > 0x04) {
 	  if (!bootLoaderCondition()) {
-	    stayinloader = (stayinloader & 0xfc) | 0x2;
+	    stayinloader-=0x04;
 	  } 
 	} else {
 	  if (bootLoaderCondition()) {
-	    stayinloader &= 0xfc;
+	    stayinloader &= 0x01;
 	  }
 	}
 
