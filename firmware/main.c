@@ -374,13 +374,13 @@ int __attribute__((noreturn)) main(void)
                 }
             }
 #endif
-	if (stayinloader > 0x04) {
+	if (stayinloader > 0x10) {
 	  if (!bootLoaderCondition()) {
-	    stayinloader-=0x04;
+	    stayinloader-=0x10;
 	  } 
 	} else {
 	  if (bootLoaderCondition()) {
-	    stayinloader &= 0x01;
+	    if (stayinloader > 1) stayinloader-=2;
 	  }
 	}
 
