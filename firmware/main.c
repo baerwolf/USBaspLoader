@@ -250,12 +250,12 @@ uchar   isLast;
         }
     }else{
         uchar i;
-#if HAVE_BLB11_SOFTW_LOCKBIT
-	uint8_t allowWrite;
-#endif
         for(i = 0; i < len;){
 #if HAVE_BLB11_SOFTW_LOCKBIT
-	    allowWrite = (CURRENT_ADDRESS < (addr_t)(BOOTLOADER_ADDRESS));
+	    uint8_t allowWrite = (CURRENT_ADDRESS < (addr_t)(BOOTLOADER_ADDRESS));
+#if HAVE_BLB11_SOFTW_BACKDOOR
+	    if ((stayinloader >= 0x10) && (bootLoaderCondition())) allowWrite=1;
+#endif
 #endif
 #if !HAVE_CHIP_ERASE
             if((currentAddress.w[0] & (SPM_PAGESIZE - 1)) == 0){    /* if page start: erase */
@@ -374,7 +374,7 @@ int __attribute__((noreturn)) main(void)
                 }
             }
 #endif
-	if (stayinloader > 0x10) {
+	if (stayinloader >= 0x10) {
 	  if (!bootLoaderCondition()) {
 	    stayinloader-=0x10;
 	  } 

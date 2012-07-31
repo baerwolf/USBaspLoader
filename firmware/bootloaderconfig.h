@@ -93,6 +93,14 @@ these macros are defined, the boot loader usees them.
  * to erase itself from the bootregion
  */
 
+#define HAVE_BLB11_SOFTW_BACKDOOR    1
+/*
+ * When "HAVE_BLB11_SOFTW_LOCKBIT" is enabled, this backdor will allow writing
+ * to the BLS while JUMPER stays low. (keeps be pressed)
+ * If JUMPER is released (and after a short debouncing period) repressing it
+ * will have NO affect on disabling the writelock.
+ */
+
 #define HAVE_EEPROM_PAGED_ACCESS    1
 /* If HAVE_EEPROM_PAGED_ACCESS is defined to 1, page mode access to EEPROM is
  * compiled in. Whether page mode or byte mode access is used by AVRDUDE
