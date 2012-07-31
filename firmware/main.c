@@ -341,7 +341,6 @@ uchar   i = 0;
     /* enforce USB re-enumerate: */
     usbDeviceDisconnect();  /* do this while interrupts are disabled */
     while(--i){         /* fake USB disconnect for > 250 ms */
-        wdt_reset();
         _delay_ms(1);
     }
     usbDeviceConnect();
