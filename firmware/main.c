@@ -250,13 +250,19 @@ uchar   isLast;
         }
     }else{
         uchar i;
+#if HAVE_BLB11_SOFTW_LOCKBIT
+	uint8_t allowWrite;
+#endif
         for(i = 0; i < len;){
+#if HAVE_BLB11_SOFTW_LOCKBIT
+	    allowWrite = (CURRENT_ADDRESS < (addr_t)(BOOTLOADER_ADDRESS));
+#endif
 #if !HAVE_CHIP_ERASE
             if((currentAddress.w[0] & (SPM_PAGESIZE - 1)) == 0){    /* if page start: erase */
                 DBG1(0x33, 0, 0);
 #   ifndef NO_FLASH_WRITE
 #   	if HAVE_BLB11_SOFTW_LOCKBIT
-		if (CURRENT_ADDRESS < (addr_t)(BOOTLOADER_ADDRESS)) {
+		if (allowWrite) {
 #   	endif
                 cli();
                 boot_page_erase(CURRENT_ADDRESS);   /* erase page */
@@ -271,7 +277,7 @@ uchar   isLast;
             i += 2;
             DBG1(0x32, 0, 0);
 #   	if HAVE_BLB11_SOFTW_LOCKBIT
-	    if (CURRENT_ADDRESS < (addr_t)(BOOTLOADER_ADDRESS)) {
+	    if (allowWrite) {
 #   	endif
             cli();
             boot_page_fill(CURRENT_ADDRESS, *(short *)data);
@@ -286,7 +292,7 @@ uchar   isLast;
                 DBG1(0x34, 0, 0);
 #ifndef NO_FLASH_WRITE
 #   	if HAVE_BLB11_SOFTW_LOCKBIT
-		if ((CURRENT_ADDRESS - (addr_t)2) < (addr_t)(BOOTLOADER_ADDRESS)) {
+		if (allowWrite) {
 #   	endif
                 cli();
                 boot_page_write(CURRENT_ADDRESS - 2);
