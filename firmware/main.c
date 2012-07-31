@@ -306,9 +306,9 @@ uchar   isLast;
                 DBG1(0x33, 0, 0);
 #   ifndef NO_FLASH_WRITE
                 cli();
-                boot_page_erase((currentAddress.w[0]-2) & (SPM_PAGESIZE - 1));   /* erase page */
+                boot_page_erase(CURRENT_ADDRESS - 2);   /* erase page */
                 sei();
-                boot_spm_busy_wait();               /* wait until page is erased */
+                boot_spm_busy_wait();                   /* wait until page is erased */
 #   endif
 #endif
                 DBG1(0x34, 0, 0);
