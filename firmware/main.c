@@ -226,10 +226,9 @@ static uchar    replyBuffer[4];
 #if BOOTLOADER_CAN_EXIT
       requestBootLoaderExit = 1;      /* allow proper shutdown/close of connection */
 #endif
-    }else if(rq->bRequest == USBASP_FUNC_CONNECT){
-      stayinloader	   |= (0x01);
     }else{
-        /* ignore: others */
+        /* ignore: others, but could be USBASP_FUNC_CONNECT */
+	stayinloader	   |= (0x01);
     }
     return len;
 }
