@@ -111,6 +111,8 @@ static uchar            	currentRequest;
 static const uchar      	currentRequest = 0;
 #endif
 
+static unsigned char		wdtstatus;
+
 static const uchar  signatureBytes[4] = {
 #ifdef SIGNATURE_BYTES
     SIGNATURE_BYTES
@@ -143,6 +145,9 @@ static void leaveBootloader()
     USB_INTR_CFG = 0;       /* also reset config bits */
     GICR = (1 << IVCE);     /* enable change of interrupt vectors */
     GICR = (0 << IVSEL);    /* move interrupts to application flash section */
+    
+    WDTCR = wdtstatus;
+    
 /* We must go through a global function pointer variable instead of writing
  *  ((void (*)(void))0)();
  * because the compiler optimizes a constant 0 to "rcall 0" which is not
@@ -328,6 +333,7 @@ uchar   i = 0;
 int __attribute__((noreturn)) main(void)
 {
     /* initialize  */
+    wdtstatus = WDTCR;
     wdt_disable();      /* main app may have enabled watchdog */
     bootLoaderInit();
     odDebugInit();

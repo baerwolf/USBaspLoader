@@ -165,7 +165,8 @@ these macros are defined, the boot loader usees them.
 
 static inline void  bootLoaderInit(void)
 {
-    PORTD |= (1 << JUMPER_BIT);     /* activate pull-up */
+    DDRD   = 0;
+    PORTD  = (1 << JUMPER_BIT);     /* activate pull-up */
 //     deactivated by Stephan - reset after each avrdude op is annoing!
 //     if(!(MCUCSR & (1 << EXTRF)))    /* If this was not an external reset, ignore */
 //         leaveBootloader();
