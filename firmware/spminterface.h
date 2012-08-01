@@ -36,7 +36,7 @@ bootloader__do_spm:
 ;you may also want to disable wdt, since this routine may busy-loop
 ;==================================================================
 ;-->INPUT:
-;spmcr (spmcrval determines SPM action) will be register:	r10
+;spmcr (spmcrval determines SPM action) will be register:	r18
 ;MCU dependend RA(MPZ should be transfered within register:	r11
 ;lo8(Z) should be transfered within register:			r12
 ;hi8(Z) should be transfered within register:			r13
@@ -56,12 +56,18 @@ mov	r30,	r12
 mov	r31,	r13
 
 wait:			;check for previous SPM complete
-in	temp1, SPMCR
-sbrc	temp1, SPMEN
+in	temp0, SPMCR
+sbrc	temp0, SPMEN
 rjmp	wait
 
 out	SPMCR, spmcrval	;SPM timed sequence
 spm
+
+;avoid crash of userapplication
+ldi	spmcrval, ((1<<RWWSRE) | (1<<SPMEN)) 
+in	temp0,	  SPMCR
+sbrc	temp0,	  RWWSB
+rjmp	bootloader__do_spm
 
 ret
 
@@ -91,10 +97,9 @@ ret
  * (so bootloader always uses 2kbytes flash)
  */
 #if defined (__AVR_ATmega8__) || defined (__AVR_ATmega8HVA__)
-//assume  SPMCR==0x37, SPMEN==0x00
-const uint16_t bootloader__do_spm[22] PROGMEM = {0x0000, 0x2dec, 0x2dfd, 0xb6c7, 0xfcc0, 0xcffd, 0xbea7, 0x95e8, 0x9508,
-						 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF,
-						 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF};
+//assume  SPMCR==0x37, SPMEN==0x0, RWWSRE=0x4, RWWSB=0x6
+const uint16_t bootloader__do_spm[22] PROGMEM = {0x0000, 0x2dec, 0x2dfd, 0xb6b7, 0xfcb0, 0xc000, 0xbf27, 0x95e8, 0xe121, 0xb6b7, 0xfcb6, 0xc000, 0x9508,
+						 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF};
 #else
   #error "bootloader__do_spm has to be adapted, since there is no architecture code, yet"
 #endif  
@@ -104,3 +109,4 @@ const uint16_t bootloader__do_spm[22] PROGMEM = {0x0000, 0x2dec, 0x2dfd, 0xb6c7,
 #endif /*ifdef BOOTLOADER_ADDRESS*/
 
 #endif
+						 
