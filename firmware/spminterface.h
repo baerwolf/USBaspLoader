@@ -55,19 +55,24 @@ mov	rampZ,	r11
 mov	r30,	r12
 mov	r31,	r13
 
-wait:			;check for previous SPM complete
+waitA:			;check for previous SPM complete
 in	temp0, SPMCR
 sbrc	temp0, SPMEN
-rjmp	wait
+rjmp	waitA
 
 out	SPMCR, spmcrval	;SPM timed sequence
 spm
+
+waitB:			;check for previous SPM complete
+in	temp0, SPMCR
+sbrc	temp0, SPMEN
+rjmp	waitB
 
 ;avoid crash of userapplication
 ldi	spmcrval, ((1<<RWWSRE) | (1<<SPMEN)) 
 in	temp0,	  SPMCR
 sbrc	temp0,	  RWWSB
-rjmp	bootloader__do_spm
+rjmp	waitA
 
 ret
 
@@ -98,8 +103,32 @@ ret
  */
 #if defined (__AVR_ATmega8__) || defined (__AVR_ATmega8HVA__)
 //assume  SPMCR==0x37, SPMEN==0x0, RWWSRE=0x4, RWWSB=0x6
-const uint16_t bootloader__do_spm[22] PROGMEM = {0x0000, 0x2dec, 0x2dfd, 0xb6b7, 0xfcb0, 0xc000, 0xbf27, 0x95e8, 0xe121, 0xb6b7, 0xfcb6, 0xc000, 0x9508,
-						 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF};
+const uint16_t bootloader__do_spm[22] PROGMEM = {0x0000, 0x2dec, 0x2dfd, 0xb6b7, 0xfcb0, 0xcffd, 0xbf27, 0x95e8, 0xb6b7,
+						 0xfcb0, 0xcffd, 0xe121, 0xb6b7, 0xfcb6, 0xcff4, 0x9508, 0xFFFF, 0xFFFF,
+						 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF};
+/*
+00001826 <bootloader__do_spm>:
+    1826:	00 00       	nop
+    1828:	ec 2d       	mov	r30, r12
+    182a:	fd 2d       	mov	r31, r13
+
+0000182c <waitA>:
+    182c:	b7 b6       	in	r11, 0x37	; 55
+    182e:	b0 fc       	sbrc	r11, 0
+    1830:	fd cf       	rjmp	.-6      	; 0x182c <waitA>
+    1832:	27 bf       	out	0x37, r18	; 55
+    1834:	e8 95       	spm
+
+00001836 <waitB>:
+    1836:	b7 b6       	in	r11, 0x37	; 55
+    1838:	b0 fc       	sbrc	r11, 0
+    183a:	fd cf       	rjmp	.-6      	; 0x1836 <waitB>
+    183c:	21 e1       	ldi	r18, 0x11	; 17
+    183e:	b7 b6       	in	r11, 0x37	; 55
+    1840:	b6 fc       	sbrc	r11, 6
+    1842:	f4 cf       	rjmp	.-24     	; 0x182c <waitA>
+    1844:	08 95       	ret
+*/
 #else
   #error "bootloader__do_spm has to be adapted, since there is no architecture code, yet"
 #endif  
