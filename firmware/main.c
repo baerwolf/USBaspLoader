@@ -254,6 +254,7 @@ uchar   isLast;
         for(i = 0; i < len;){
 #if HAVE_BLB11_SOFTW_LOCKBIT
 	    if (CURRENT_ADDRESS >= (addr_t)(BOOTLOADER_ADDRESS)) {
+	      return 1;
 	    }
 #endif
             i += 2;
