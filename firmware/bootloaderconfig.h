@@ -93,34 +93,15 @@ these macros are defined, the boot loader usees them.
  * to erase itself from the bootregion
  */
 
-#define HAVE_DOSPM_TUNNELCMD	    1
+#define HAVE_SPMINTEREFACE	    1
 /*
- * When enabled, "HAVE_DOSPM_TUNNELCMD" will implement an PROGMEM ARRAY 
- * with up to 15 opcodes within BLS.
- * This array will be called "bootloader__do_spm", and implements the 
- * "do_spm" subroutine from atmels "Instruction Set Manual" Rev.0856I, page 140.
- * 
-do_spm:
-;input:	spmcrval determines SPM action
-;disable interrupts if enabled, store status
-;temp1 will be register:	r7
-;temp2 will be register:	r8
-;spmcrval will be register:	r9
-
-in	temp2, SREG	; --> has to be done before calling
-cli			; --> has to be done before calling
-			;check for previous SPM complete
-wait:
-in	temp1, SPMCR
-sbrc	temp1, SPMEN
-rjmp	wait
-			;SPM timed sequence
-out	SPMCR, spmcrval
-spm
-			;restore SREG (to enable interrupts if originally enabled)
-out	SREG, temp2
-ret
- * 
+ * Since code within normal section of application memory (rww-section) is
+ * not able to call spm for programming flash-pages, this option (when
+ * enabled) will insert a small subroutine into the bootloader-section
+ * to enable applications to circumvent this limitation and make them
+ * able to program the flash in a similar way as the bootloader does, too.
+ * For further details see "spminterface.h", which implements this 
+ * feature.
  */
 
 #define HAVE_EEPROM_PAGED_ACCESS    1
