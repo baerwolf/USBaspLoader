@@ -282,11 +282,6 @@ uchar   isLast;
         for(i = 0; i < len;){
 #if HAVE_BLB11_SOFTW_LOCKBIT
 	    if (CURRENT_ADDRESS >= (addr_t)(BOOTLOADER_ADDRESS)) {
-#if HAVE_BLB11_SOFTW_BACKDOOR
-	      if (!((stayinloader >= 0x10) && (bootLoaderCondition()))) return 1;
-#else
-	      return 1;
-#endif
 	    }
 #endif
             i += 2;

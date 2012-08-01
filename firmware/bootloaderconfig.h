@@ -93,14 +93,6 @@ these macros are defined, the boot loader usees them.
  * to erase itself from the bootregion
  */
 
-#define HAVE_BLB11_SOFTW_BACKDOOR    1
-/*
- * When "HAVE_BLB11_SOFTW_LOCKBIT" is enabled, this backdoor will allow writing
- * to the BLS while JUMPER stays low. (keeps be pressed)
- * If JUMPER is released (and after a short debouncing period) repressing it
- * will have NO affect on disabling the writelock.
- */
-
 #define HAVE_DOSPM_TUNNELCMD	    1
 /*
  * When enabled, "HAVE_DOSPM_TUNNELCMD" will implement an PROGMEM ARRAY 
