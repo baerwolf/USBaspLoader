@@ -2,6 +2,8 @@
 # Project: USBaspLoader
 # Author: Christian Starkjohann
 # Creation Date: 2007-12-10
+# Author: Stephan Bärwolf
+# Improvement Date: 2012-07-31
 # Tabsize: 4
 # Copyright: (c) 2007 by OBJECTIVE DEVELOPMENT Software GmbH
 # License: GNU GPL v2 (see License.txt)
