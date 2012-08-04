@@ -124,6 +124,8 @@ static const uchar  signatureBytes[4] = {
     0x1e, 0x94, 0x06, 0
 #elif defined (__AVR_ATmega328P__)
     0x1e, 0x95, 0x0f, 0
+#elif defined (__AVR_ATmega1284P__)
+    0x1e, 0x97, 0x05, 0
 #else
 #   error "Device signature is not known, please edit main.c!"
 #endif
