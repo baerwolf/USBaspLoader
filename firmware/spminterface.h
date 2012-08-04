@@ -40,22 +40,27 @@ bootloader__do_spm:
 ;MCU dependend RA(MPZ should be transfered within register:	r11
 ;lo8(Z) should be transfered within register:			r12
 ;hi8(Z) should be transfered within register:			r13
+;( as definition of SPM low8bit of dataword are stored within	r0 )
+;( as definition of SPM hi8bit  of dataword are stored within	r1 )
 
 ;<-->USED/CHANGED:
 ;temp0 will be register:					r11
 ;temp1 will be register:					r12
 ;temp2 will be register:					r13
+;spmcrval (r18) may also be changed due to rww reenable-phase	r18
 ;Z (r31:r30) wil be changed during operation
 
 ;<--OUT:
 ;==================================================================
+; TODO: waitA and waitB could be merged to subroutine saving 2 opc
+;==================================================================
 
-;load pageaddress (Z) from r13:12 since it may was used for icall
+;load pageaddress (Z) from (r11:)r13:12 since it may was used for icall
 mov	rampZ,	r11
 mov	r30,	r12
 mov	r31,	r13
 
-waitA:			;check for previous SPM complete
+waitA:			;check for pending SPM complete
 in	temp0, SPMCR
 sbrc	temp0, SPMEN
 rjmp	waitA

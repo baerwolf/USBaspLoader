@@ -15,15 +15,23 @@
 
 F_CPU = 16000000
 DEVICE = atmega8
+
 # BOOTLOADER_ADDRESS is 1800 for 8k devices, 3800 for 16k and 7800 for 32k.
 BOOTLOADER_ADDRESS = 1800
-FUSEOPT = $(FUSEOPT_8)
-LOCKOPT = -U lock:w:0x2f:m
 
-PROGRAMMER = -c pony-stk200
 # PROGRAMMER contains AVRDUDE options to address your programmer
+# PROGRAMMER = -c pony-stk200
+PROGRAMMER = -c usbasp
 
-FUSEOPT_8 = -U hfuse:w:0xc0:m -U lfuse:w:0x9f:m
+#  since USBaspLoader supports HAVE_BLB11_SOFTW_LOCKBIT...
+LOCKOPT = -U lock:w:0x3f:m
+FUSEOPT = $(FUSEOPT_8)
+
+
+# standard atmega8 needs BODLEVEL to be programed, since it is a 5V device
+# you may also want to UNprogram  SUT1 to get a SLOWER bootup (lfuse then would be 0x3f)
+FUSEOPT_8 = -U hfuse:w:0xc0:m -U lfuse:w:0x1f:m
+
 FUSEOPT_88 = -U hfuse:w:0xd6:m -U lfuse:w:0xdf:m -U efuse:w:0x00:m
 FUSEOPT_168 = -U hfuse:w:0xd6:m -U lfuse:w:0xdf:m -U efuse:w:0x00:m
 FUSEOPT_328 = -U lfuse:w:0xf7:m -U hfuse:w:0xda:m -U efuse:w:0x03:m
