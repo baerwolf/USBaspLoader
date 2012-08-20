@@ -123,6 +123,9 @@ OBJECTS =  usbdrv/usbdrvasm.o usbdrv/oddebug.o main.o
 # symbolic targets:
 all: main.hex
 
+install: main.hex
+	cp -Rvp main.hex ./hexfiles/usbasploader.hex
+
 .c.o:
 	$(CC) $(CFLAGS) -c $< -o $@
 
