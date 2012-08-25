@@ -46,6 +46,15 @@ static void leaveBootloader() __attribute__((__noreturn__));
 #define USBASP_FUNC_WRITEEEPROM     8
 #define USBASP_FUNC_SETLONGADDRESS  9
 
+// additional USBasp Commands
+#define USBASP_FUNC_SETISPSCK	     10
+#define USBASP_FUNC_TPI_CONNECT      11
+#define USBASP_FUNC_TPI_DISCONNECT   12
+#define USBASP_FUNC_TPI_RAWREAD      13
+#define USBASP_FUNC_TPI_RAWWRITE     14
+#define USBASP_FUNC_TPI_READBLOCK    15
+#define USBASP_FUNC_TPI_WRITEBLOCK   16
+#define USBASP_FUNC_GETCAPABILITIES 127
 /* ------------------------------------------------------------------------ */
 
 #ifndef ulong
