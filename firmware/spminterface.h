@@ -4,6 +4,7 @@
  * Creation Date: 2012-08-01
  * Copyright: (c) 2012 by Stephan Baerwolf
  * License: GNU GPL v2 (see License.txt)
+ * Version: 0.4
  */
 
 #ifndef SPMINTERFACE_H_f70ba6adf7624275947e859bdbff0599
@@ -16,9 +17,9 @@
  * This subroutine can be called by normal code in order to 
  * enable it to program the flash (and depending on BLB11-lockbit
  * also the bootsection itself). Since SPM-calls from RWW-sections
- * will fail to work. The Routine will be called "bootloader__do_spm".
+ * will fail to work. The routine will be called "bootloader__do_spm".
  * Its principle assembler-code is depicted below (real code is a
- * little machinedependen).
+ * little machinedependend).
  * Interfaces will be the 8-bit registers r10..r13, for details 
  * also see below. As also the pageaddress-registes (Z and rampZ)
  * are interfaced via different registers, it is possible to call
@@ -172,9 +173,8 @@ void do_spm(const uint32_t flash_byteaddress, const uint8_t spmcrval, const uint
  */
 #if defined (__AVR_ATmega8__) || defined (__AVR_ATmega8HVA__)
 //assume  SPMCR==0x37, SPMEN==0x0, RWWSRE=0x4, RWWSB=0x6
-const uint16_t bootloader__do_spm[19] PROGMEM = {0x0000, 0x2dec, 0x2dfd, 0xb6b7, 0xfcb0, 0xcffd, 0xbf27, 0x95e8, 0xb6b7,
-						 0xfcb0, 0xcffd, 0xe121, 0xb6b7, 0xfcb6, 0xcff4, 0x9508, 0xFFFF, 0xFFFF,
-						 0xFFFF};
+const uint16_t bootloader__do_spm[17] PROGMEM = {0x0000, 0x2dec, 0x2dfd, 0xb6b7, 0xfcb0, 0xcffd, 0xbf27, 0x95e8, 0xb6b7,
+						 0xfcb0, 0xcffd, 0xe121, 0xb6b7, 0xfcb6, 0xcff4, 0x9508, 0xFFFF};
 /*
 00001826 <bootloader__do_spm>:
     1826:	00 00       	nop
@@ -205,9 +205,8 @@ const uint16_t bootloader__do_spm[19] PROGMEM = {0x0000, 0x2dec, 0x2dfd, 0xb6b7,
 
 #elif defined (__AVR_ATmega48__) || defined (__AVR_ATmega48P__) || defined (__AVR_ATmega88__) || defined (__AVR_ATmega88P__) || defined (__AVR_ATmega168__) || defined (__AVR_ATmega168P__)
 //assume  SPMCR:=SPMCSR==0x37, SPMEN:=SELFPRGEN==0x0, RWWSRE=0x4, RWWSB=0x6
-const uint16_t bootloader__do_spm[19] PROGMEM = {0x0000, 0x2dec, 0x2dfd, 0xb6b7, 0xfcb0, 0xcffd, 0xbf27, 0x95e8, 0xb6b7,
-						 0xfcb0, 0xcffd, 0xe121, 0xb6b7, 0xfcb6, 0xcff4, 0x9508, 0xFFFF, 0xFFFF,
-						 0xFFFF};
+const uint16_t bootloader__do_spm[17] PROGMEM = {0x0000, 0x2dec, 0x2dfd, 0xb6b7, 0xfcb0, 0xcffd, 0xbf27, 0x95e8, 0xb6b7,
+						 0xfcb0, 0xcffd, 0xe121, 0xb6b7, 0xfcb6, 0xcff4, 0x9508, 0xFFFF};
 /*
 00001826 <bootloader__do_spm>:
     1826:	00 00       	nop
@@ -238,9 +237,8 @@ const uint16_t bootloader__do_spm[19] PROGMEM = {0x0000, 0x2dec, 0x2dfd, 0xb6b7,
 
 #elif defined (__AVR_ATmega48A__) || defined (__AVR_ATmega48PA__) || defined (__AVR_ATmega88A__) || defined (__AVR_ATmega88PA__) || defined (__AVR_ATmega168A__) || defined (__AVR_ATmega168PA__) || defined (__AVR_ATmega328__) || defined (__AVR_ATmega328P__)
 //assume  SPMCR:=SPMCSR==0x37, SPMEN:=SELFPRGEN==0x0, RWWSRE=0x4, RWWSB=0x6
-const uint16_t bootloader__do_spm[19] PROGMEM = {0x0000, 0x2dec, 0x2dfd, 0xb6b7, 0xfcb0, 0xcffd, 0xbf27, 0x95e8, 0xb6b7,
-						 0xfcb0, 0xcffd, 0xe121, 0xb6b7, 0xfcb6, 0xcff4, 0x9508, 0xFFFF, 0xFFFF,
-						 0xFFFF};
+const uint16_t bootloader__do_spm[17] PROGMEM = {0x0000, 0x2dec, 0x2dfd, 0xb6b7, 0xfcb0, 0xcffd, 0xbf27, 0x95e8, 0xb6b7,
+						 0xfcb0, 0xcffd, 0xe121, 0xb6b7, 0xfcb6, 0xcff4, 0x9508, 0xFFFF};
 /*
 00001826 <bootloader__do_spm>:
     1826:	00 00       	nop
@@ -271,9 +269,8 @@ const uint16_t bootloader__do_spm[19] PROGMEM = {0x0000, 0x2dec, 0x2dfd, 0xb6b7,
 
 #elif defined (__AVR_ATmega164A__) || defined (__AVR_ATmega164PA__) || defined (__AVR_ATmega324A__) || defined (__AVR_ATmega324PA__) || defined (__AVR_ATmega644A__) || defined (__AVR_ATmega644PA__) || defined (__AVR_ATmega1284__) || defined (__AVR_ATmega1284P__)
 //assume  SPMCR:=SPCSR==0x37, SPMEN==0x0, RWWSRE=0x4, RWWSB=0x6
-const uint16_t bootloader__do_spm[19] PROGMEM = {0x0000, 0x2dec, 0x2dfd, 0xb6b7, 0xfcb0, 0xcffd, 0xbf27, 0x95e8, 0xb6b7,
-						 0xfcb0, 0xcffd, 0xe121, 0xb6b7, 0xfcb6, 0xcff4, 0x9508, 0xFFFF, 0xFFFF,
-						 0xFFFF};
+const uint16_t bootloader__do_spm[17] PROGMEM = {0x0000, 0x2dec, 0x2dfd, 0xb6b7, 0xfcb0, 0xcffd, 0xbf27, 0x95e8, 0xb6b7,
+						 0xfcb0, 0xcffd, 0xe121, 0xb6b7, 0xfcb6, 0xcff4, 0x9508, 0xFFFF};
 /*
 00001826 <bootloader__do_spm>:
     1826:	00 00       	nop
