@@ -217,7 +217,7 @@ static uchar    replyBuffer[4];
         }
         replyBuffer[3] = rval;
         len = 4;
-    }else if(rq->bRequest == USBASP_FUNC_ENABLEPROG){
+    }else if((rq->bRequest == USBASP_FUNC_ENABLEPROG) || (rq->bRequest == USBASP_FUNC_SETISPSCK)){
         /* replyBuffer[0] = 0; is never touched and thus always 0 which means success */
         len = 1;
     }else if(rq->bRequest >= USBASP_FUNC_READFLASH && rq->bRequest <= USBASP_FUNC_SETLONGADDRESS){
