@@ -20,6 +20,8 @@
 
 #include <avr/cpufunc.h>
 
+#include <avr/boot.h>
+
 #include <string.h>
 
 
