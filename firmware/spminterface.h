@@ -105,6 +105,11 @@ ret
  * Call the "bootloader__do_spm"-function, located within the BLS via comfortable C-interface
  * During operation code will block - disable or reset watchdog before call.
  * 
+ * ATTANTION:	Since the underlying "bootloader__do_spm" will automatically reenable the
+ * 		rww-section, only one way to program the flash will work.
+ * 		(First erase the page, then fill temp. buffer, finally program...)
+ * 		Since unblocking rww-section erases the temp. pagebuffer (which happens
+ * 		after a page-erase), first programming this buffer does not help !!
  * 
  * REMEMBER: interrupts have to be disabled! (otherwise code may crash non-deterministic)
  * 
