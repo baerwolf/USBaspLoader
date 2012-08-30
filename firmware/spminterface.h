@@ -114,51 +114,40 @@ ret
  * REMEMBER: interrupts have to be disabled! (otherwise code may crash non-deterministic)
  * 
  */
-void do_spm(const uint32_t flash_byteaddress, const uint8_t spmcrval, const uint8_t r1_highdatabyte, const uint8_t r0_lowdatabyte) {
-    uint8_t loaddr = (flash_byteaddress >>  0) & 0xff;
-    uint8_t hiaddr = (flash_byteaddress >>  8) & 0xff;
-    uint8_t adaddr = (flash_byteaddress >> 16) & 0xff;
-  
-    asm volatile (
-    "push r0\n\t"  
-    "push r1\n\t"  
-      
-    "mov r13, %[hiaddr]\n\t"
-    "mov r12, %[loaddr]\n\t"
-    "mov r11, %[adaddr]\n\t"
-      
-      
-    /* high8 of address of bootloader__do_spm */
-    "ldi r18, %[hi8spmfunc]\n\t"
-    "mov r31, r18\n\t"
-    
-    /* low8 of address of bootloader__do_spm */
-    "ldi r18, %[lo8spmfunc]\n\t"
-    "mov r30, r18\n\t"
-    
-    /* also load the spmcrval */
-    "mov r18, %[spmcrval]\n\t"
+#define __do_spm_Ex(flash_wordaddress, spmcrval, dataword, ___bootloader__do_spm__ptr)		\
+({												\
+    asm volatile (										\
+    "push r0\n\t"  										\
+    "push r1\n\t"  										\
+												\
+    "mov r13, %B[flashaddress]\n\t"								\
+    "mov r12, %A[flashaddress]\n\t"								\
+    "mov r11, %C[flashaddress]\n\t"								\
+												\
+    /* also load the spmcrval */								\
+    "mov r18, %[spmcrval]\n\t"									\
+												\
+												\
+    "mov r1, %B[data]\n\t"									\
+    "mov r0, %A[data]\n\t"									\
+												\
+    /* finally call the bootloader-function */							\
+    "icall\n\r"											\
+												\
+    "pop  r1\n\t"  										\
+    "pop  r0\n\t"  										\
+												\
+    :												\
+    : [flashaddress] "r" (flash_wordaddress),							\
+      [spmfunctionaddress] "z" (___bootloader__do_spm__ptr),					\
+      [spmcrval] "r" (spmcrval),								\
+      [data] "r" (dataword)									\
+    : "r0","r1","r11","r12","r13","r18"								\
+    );												\
+})
 
-    /* correkt address of bootloader__do_spm from bytes into words */
-    "lsr r31\n\t"
-    "ror r30\n\t"
-    
-    "mov r1, %[hidata]\n\t"
-    "mov r0, %[lodata]\n\t"
-
-    /* finally call the bootloader-function */
-    "icall\n\r"
-
-    "pop  r1\n\t"  
-    "pop  r0\n\t"  
-
-    :
-    : [loaddr] "r" (loaddr), [hiaddr] "r" (hiaddr), [adaddr] "r" (adaddr), [spmcrval] "r" (spmcrval),
-      [lodata] "r" (r0_lowdatabyte), [hidata] "r" (r1_highdatabyte),
-      [hi8spmfunc] "M" (funcaddr___bootloader__do_spm >> 8), [lo8spmfunc] "M" (funcaddr___bootloader__do_spm & 0xff)
-
-    : "r0","r1","r11","r12","r13","r18"
-    );
+void do_spm(const uint32_t flash_byteaddress, const uint8_t spmcrval, const uint16_t dataword) {
+    __do_spm_Ex(flash_byteaddress, spmcrval, dataword, funcaddr___bootloader__do_spm >> 1);
 }
 
 
