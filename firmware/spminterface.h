@@ -262,12 +262,12 @@ const uint16_t bootloader__do_spm[17] PROGMEM = {0x0000, 0x2dec, 0x2dfd, 0xb6b7,
 
 
 #elif defined (__AVR_ATmega164A__) || defined (__AVR_ATmega164PA__) || defined (__AVR_ATmega324A__) || defined (__AVR_ATmega324PA__) || defined (__AVR_ATmega644A__) || defined (__AVR_ATmega644PA__) || defined (__AVR_ATmega1284__) || defined (__AVR_ATmega1284P__)
-//assume  SPMCR:=SPCSR==0x37, SPMEN==0x0, RWWSRE=0x4, RWWSB=0x6
-const uint16_t bootloader__do_spm[17] PROGMEM = {0x0000, 0x2dec, 0x2dfd, 0xb6b7, 0xfcb0, 0xcffd, 0xbf27, 0x95e8, 0xb6b7,
+//assume  SPMCR:=SPCSR==0x37, SPMEN==0x0, RWWSRE=0x4, RWWSB=0x6 and rampZ=0x3b
+const uint16_t bootloader__do_spm[17] PROGMEM = {0xbebb, 0x2dec, 0x2dfd, 0xb6b7, 0xfcb0, 0xcffd, 0xbf27, 0x95e8, 0xb6b7,
 						 0xfcb0, 0xcffd, 0xe121, 0xb6b7, 0xfcb6, 0xcff4, 0x9508, 0xFFFF};
 /*
 00001826 <bootloader__do_spm>:
-    1826:	00 00       	nop
+    1826:	bb be       	out	0x3b,r11	; rampZ=r11; (rampZ is at IO 0x3b)
     1828:	ec 2d       	mov	r30, r12
     182a:	fd 2d       	mov	r31, r13
 
