@@ -103,11 +103,16 @@ FUSEOPT_328 = -U lfuse:w:0xf7:m -U hfuse:w:0xda:m -U efuse:w:0x03:m
 ###############################################################################
 
 # Tools:
+AVRPATH =
 AVRDUDE = @echo avrdude $(PROGRAMMER) -p $(DEVICE)
-CC=@avr-gcc
+
+ECHO=@echo
 GCC=@gcc
 MAKE=@make
 RM=@rm -f
-OBC=@avr-objcopy
-ECHO=@echo
+
+CC=@$(AVRPATH)avr-gcc
+OBC=@$(AVRPATH)avr-objcopy
+OBD=@$(AVRPATH)avr-objdump
+SIZ=@$(AVRPATH)avr-size
 

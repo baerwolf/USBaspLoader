@@ -71,11 +71,11 @@ main.bin:	$(OBJECTS)
 
 main.hex:	main.bin
 	rm -f main.hex main.eep.hex
-	avr-objcopy -j .text -j .data -O ihex main.bin main.hex
-	avr-size main.bin
+	$(OBC) -j .text -j .data -O ihex main.bin main.hex
+	$(SIZ) main.bin
 
 disasm:	main.bin
-	avr-objdump -d main.bin
+	$(OBD) -d main.bin
 
 cpp:
 	$(CC) $(CFLAGS) -E main.c
@@ -88,7 +88,7 @@ ALLHEXFILES = hexfiles/mega8_12mhz.hex hexfiles/mega8_15mhz.hex hexfiles/mega8_1
 
 allhexfiles: $(ALLHEXFILES)
 	$(MAKE) clean
-	avr-size hexfiles/*.hex
+	$(SIZ) hexfiles/*.hex
 
 $(ALLHEXFILES):
 	@[ -d hexfiles ] || mkdir hexfiles

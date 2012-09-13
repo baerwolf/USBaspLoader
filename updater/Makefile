@@ -48,7 +48,7 @@ updater.elf: updater.o
 updater.hex: updater.elf
 	$(OBC) -j .text -j .data -O ihex updater.elf updater.hex
 	$(ECHO) "."
-	avr-size updater.elf
+	$(SIZ) updater.elf
 	$(ECHO) "."
 	$(AVRDUDE) -D -U flash:w:updater.hex:i
 	$(ECHO) "."
