@@ -15,6 +15,6 @@ Wenn dieser Taster nach dem ersten loslassen erneu gedrueckt wird beendet
 sich der Loader nach Fertigstellung ggf. noch offener Operationen und
 startet die programmierte Firmware.
 
-empfohlene LFUSE: 0x9f
+empfohlene LFUSE: 0x1f
 empfohlene HFUSE: 0xc0
 empfohlene LOCK : 0x3f (unveraendert - bootsection wird per software geschuetzt)
