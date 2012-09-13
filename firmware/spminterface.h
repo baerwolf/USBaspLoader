@@ -4,7 +4,7 @@
  * Creation Date: 2012-08-01
  * Copyright: (c) 2012 by Stephan Baerwolf
  * License: GNU GPL v2 (see License.txt)
- * Version: 0.4
+ * Version: 0.6
  */
 
 #ifndef SPMINTERFACE_H_f70ba6adf7624275947e859bdbff0599
@@ -86,7 +86,19 @@ ret
 */ 
 
 #include <avr/io.h>
-#include <avr/pgmspace.h>
+
+
+
+/*
+ * This MACRO commands the linker to place correspondig
+ * data on the top of the firmware. (Right after the 
+ * interrupt-vector-table)
+ * This is necessary to always locate the
+ * "bootloader__do_spm" for example at 0x1826, even if
+ * there are existing PROGMEM within the firmware...
+ */
+#define BOOTLIBLINK __attribute__ ((section (".vectors") ))
+
 
 #ifndef BOOTLOADER_ADDRESS
 // this header is the interface for user-code
@@ -167,8 +179,8 @@ void do_spm(const uint32_t flash_byteaddress, const uint8_t spmcrval, const uint
  */
 #if defined (__AVR_ATmega8__) || defined (__AVR_ATmega8HVA__)
 //assume  SPMCR==0x37, SPMEN==0x0, RWWSRE=0x4, RWWSB=0x6
-const uint16_t bootloader__do_spm[17] PROGMEM = {0x0000, 0x2dec, 0x2dfd, 0xb6b7, 0xfcb0, 0xcffd, 0xbf27, 0x95e8, 0xb6b7,
-						 0xfcb0, 0xcffd, 0xe121, 0xb6b7, 0xfcb6, 0xcff4, 0x9508, 0xFFFF};
+const uint16_t bootloader__do_spm[17] BOOTLIBLINK = {0x0000, 0x2dec, 0x2dfd, 0xb6b7, 0xfcb0, 0xcffd, 0xbf27, 0x95e8, 0xb6b7,
+						     0xfcb0, 0xcffd, 0xe121, 0xb6b7, 0xfcb6, 0xcff4, 0x9508, 0xFFFF};
 /*
 00001826 <bootloader__do_spm>:
     1826:	00 00       	nop
@@ -199,8 +211,8 @@ const uint16_t bootloader__do_spm[17] PROGMEM = {0x0000, 0x2dec, 0x2dfd, 0xb6b7,
 
 #elif defined (__AVR_ATmega48__) || defined (__AVR_ATmega48P__) || defined (__AVR_ATmega88__) || defined (__AVR_ATmega88P__) || defined (__AVR_ATmega168__) || defined (__AVR_ATmega168P__)
 //assume  SPMCR:=SPMCSR==0x37, SPMEN:=SELFPRGEN==0x0, RWWSRE=0x4, RWWSB=0x6
-const uint16_t bootloader__do_spm[17] PROGMEM = {0x0000, 0x2dec, 0x2dfd, 0xb6b7, 0xfcb0, 0xcffd, 0xbf27, 0x95e8, 0xb6b7,
-						 0xfcb0, 0xcffd, 0xe121, 0xb6b7, 0xfcb6, 0xcff4, 0x9508, 0xFFFF};
+const uint16_t bootloader__do_spm[17] BOOTLIBLINK = {0x0000, 0x2dec, 0x2dfd, 0xb6b7, 0xfcb0, 0xcffd, 0xbf27, 0x95e8, 0xb6b7,
+						     0xfcb0, 0xcffd, 0xe121, 0xb6b7, 0xfcb6, 0xcff4, 0x9508, 0xFFFF};
 /*
 00001826 <bootloader__do_spm>:
     1826:	00 00       	nop
@@ -231,8 +243,8 @@ const uint16_t bootloader__do_spm[17] PROGMEM = {0x0000, 0x2dec, 0x2dfd, 0xb6b7,
 
 #elif defined (__AVR_ATmega48A__) || defined (__AVR_ATmega48PA__) || defined (__AVR_ATmega88A__) || defined (__AVR_ATmega88PA__) || defined (__AVR_ATmega168A__) || defined (__AVR_ATmega168PA__) || defined (__AVR_ATmega328__) || defined (__AVR_ATmega328P__)
 //assume  SPMCR:=SPMCSR==0x37, SPMEN:=SELFPRGEN==0x0, RWWSRE=0x4, RWWSB=0x6
-const uint16_t bootloader__do_spm[17] PROGMEM = {0x0000, 0x2dec, 0x2dfd, 0xb6b7, 0xfcb0, 0xcffd, 0xbf27, 0x95e8, 0xb6b7,
-						 0xfcb0, 0xcffd, 0xe121, 0xb6b7, 0xfcb6, 0xcff4, 0x9508, 0xFFFF};
+const uint16_t bootloader__do_spm[17] BOOTLIBLINK = {0x0000, 0x2dec, 0x2dfd, 0xb6b7, 0xfcb0, 0xcffd, 0xbf27, 0x95e8, 0xb6b7,
+						     0xfcb0, 0xcffd, 0xe121, 0xb6b7, 0xfcb6, 0xcff4, 0x9508, 0xFFFF};
 /*
 00001826 <bootloader__do_spm>:
     1826:	00 00       	nop
@@ -263,8 +275,8 @@ const uint16_t bootloader__do_spm[17] PROGMEM = {0x0000, 0x2dec, 0x2dfd, 0xb6b7,
 
 #elif defined (__AVR_ATmega164A__) || defined (__AVR_ATmega164PA__) || defined (__AVR_ATmega324A__) || defined (__AVR_ATmega324PA__) || defined (__AVR_ATmega644A__) || defined (__AVR_ATmega644PA__) || defined (__AVR_ATmega1284__) || defined (__AVR_ATmega1284P__)
 //assume  SPMCR:=SPCSR==0x37, SPMEN==0x0, RWWSRE=0x4, RWWSB=0x6 and rampZ=0x3b
-const uint16_t bootloader__do_spm[17] PROGMEM = {0xbebb, 0x2dec, 0x2dfd, 0xb6b7, 0xfcb0, 0xcffd, 0xbf27, 0x95e8, 0xb6b7,
-						 0xfcb0, 0xcffd, 0xe121, 0xb6b7, 0xfcb6, 0xcff4, 0x9508, 0xFFFF};
+const uint16_t bootloader__do_spm[17] BOOTLIBLINK = {0xbebb, 0x2dec, 0x2dfd, 0xb6b7, 0xfcb0, 0xcffd, 0xbf27, 0x95e8, 0xb6b7,
+						     0xfcb0, 0xcffd, 0xe121, 0xb6b7, 0xfcb6, 0xcff4, 0x9508, 0xFFFF};
 /*
 00001826 <bootloader__do_spm>:
     1826:	bb be       	out	0x3b,r11	; rampZ=r11; (rampZ is at IO 0x3b)
