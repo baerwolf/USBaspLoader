@@ -25,6 +25,7 @@ int main(int argc, char** argv) {
   fprintf(myout, "\n");
   fprintf(myout, "#include <stdint.h>\n");
   fprintf(myout, "#include <avr/io.h>\n");
+  fprintf(myout, "#include <avr/pgmspace.h>\n");
   fprintf(myout, "#include \"../firmware/spminterface.h\"\n");
   fprintf(myout, "\n");
   fprintf(myout, "//firmware generator generated\n");
