@@ -7,7 +7,7 @@
 // #define mypgmdebug 1
 
 #include "../firmware/spminterface.h"
-#include "firmware.h"
+#include "usbasploader.h"
 
 #include <avr/io.h>
 #include <avr/interrupt.h>
