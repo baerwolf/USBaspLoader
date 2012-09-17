@@ -60,17 +60,17 @@ read_fuses:
 	$(UISP) --rd_fuses
 
 deepclean: clean
-	rm -f *~
+	$(RM) *~
 
 clean:
-	rm -f main.hex main.bin *.o usbdrv/*.o main.s usbdrv/oddebug.s usbdrv/usbdrv.s
+	$(RM) main.hex main.bin *.o usbdrv/*.o main.s usbdrv/oddebug.s usbdrv/usbdrv.s
 
 # file targets:
 main.bin:	$(OBJECTS)
 	$(CC) $(CFLAGS) -o main.bin $(OBJECTS) $(LDFLAGS)
 
 main.hex:	main.bin
-	rm -f main.hex main.eep.hex
+	$(RM) main.hex main.eep.hex
 	$(OBC) -j .text -j .data -O ihex main.bin main.hex
 	$(SIZ) main.bin
 
