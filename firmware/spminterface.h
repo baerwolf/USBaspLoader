@@ -4,7 +4,7 @@
  * Creation Date: 2012-08-01
  * Copyright: (c) 2012 by Stephan Baerwolf
  * License: GNU GPL v2 (see License.txt)
- * Version: 0.6
+ * Version: 0.7
  */
 
 #ifndef SPMINTERFACE_H_f70ba6adf7624275947e859bdbff0599
@@ -100,15 +100,18 @@ ret
 #define BOOTLIBLINK __attribute__ ((section (".vectors") ))
 
 
-#ifndef BOOTLOADER_ADDRESS
-// this header is the interface for user-code
-
 #ifndef funcaddr___bootloader__do_spm
-  #if defined (__AVR_ATmega8__) || defined (__AVR_ATmega8HVA__)
-    #define  funcaddr___bootloader__do_spm 0x1826
-    
+  #if (defined(BOOTLOADER_ADDRESS)) && (!(defined(NEW_BOOTLOADER_ADDRESS)))
+    #if HAVE_SPMINTEREFACE
+      #define  funcaddr___bootloader__do_spm (&bootloader__do_spm)
+    #endif  
   #else
-    #error "unknown MCU - where is bootloader__do_spm located?"
+    #if defined (__AVR_ATmega8__) || defined (__AVR_ATmega8HVA__)
+      #define  funcaddr___bootloader__do_spm 0x1826
+      
+    #else
+      #error "unknown MCU - where is bootloader__do_spm located?"
+    #endif
   #endif
 #endif
 
@@ -158,18 +161,17 @@ ret
     );												\
 })
 
+
+#if (!(defined(BOOTLOADER_ADDRESS))) || (defined(NEW_BOOTLOADER_ADDRESS))
 void do_spm(const uint32_t flash_byteaddress, const uint8_t spmcrval, const uint16_t dataword) {
     __do_spm_Ex(flash_byteaddress, spmcrval, dataword, funcaddr___bootloader__do_spm >> 1);
 }
+#endif
 
 
-
-#else /*ifndef BOOTLOADER_ADDRESS*/
-// this header is used directly within bootloader_do_spm
 #include "bootloaderconfig.h"
 
-#if HAVE_SPMINTEREFACE
-
+#if (HAVE_SPMINTEREFACE) && (defined(BOOTLOADER_ADDRESS)) && (!(defined(NEW_BOOTLOADER_ADDRESS)))
 
 /*
  * insert architecture dependend "bootloader_do_spm"-code
@@ -311,7 +313,6 @@ const uint16_t bootloader__do_spm[17] BOOTLIBLINK = {0xbebb, 0x2dec, 0x2dfd, 0xb
 
 
 #endif
-#endif /*ifdef BOOTLOADER_ADDRESS*/
 
 #endif
 						 
