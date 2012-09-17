@@ -46,12 +46,12 @@ FUSEOPT_328 = -U lfuse:w:0xf7:m -U hfuse:w:0xda:m -U efuse:w:0x03:m
 #        | +------------------ WDTON (WDT not always on)
 #        +-------------------- RSTDISBL (reset pin is enabled)
 # Fuse low byte:
-# 0x9f = 1 0 0 1   1 1 1 1
+# 0x1f = 0 0 0 1   1 1 1 1
 #        ^ ^ \ /   \--+--/
 #        | |  |       +------- CKSEL 3..0 (external >8M crystal)
 #        | |  +--------------- SUT 1..0 (crystal osc, BOD enabled)
 #        | +------------------ BODEN (BrownOut Detector enabled)
-#        +-------------------- BODLEVEL (2.7V)
+#        +-------------------- BODLEVEL (4.5V)
 #---------------------------------------------------------------------
 # ATMega88, ATMega168
 #---------------------------------------------------------------------
@@ -103,7 +103,7 @@ FUSEOPT_328 = -U lfuse:w:0xf7:m -U hfuse:w:0xda:m -U efuse:w:0x03:m
 ###############################################################################
 
 # Tools:
-AVRPATH =
+AVRPATH = $(AVR8TOOLCHAINBINDIR)
 AVRDUDE = @echo avrdude $(PROGRAMMER) -p $(DEVICE)
 
 ECHO=@echo
