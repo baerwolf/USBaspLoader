@@ -18,7 +18,21 @@
 #include <avr/eeprom.h>
 #include <util/delay.h>
 
+
+#if 0
+/*
+ * 29.09.2012 /  30.09.2012
+ * 
+ * Since cpufunc.h is not needed in this context and
+ * since it is not available in all toolchains, this include
+ * becomes deactivated by github issue-report.
+ * (In case of trouble it remains in sourcecode for reactivation.)
+ * 
+ * The autor would like to thank Lena-M for reporting this
+ * issue (https://github.com/baerwolf/USBaspLoader/issues/1).
+ */
 #include <avr/cpufunc.h>
+#endif
 
 #include <avr/boot.h>
 
