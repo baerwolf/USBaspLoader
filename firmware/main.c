@@ -223,13 +223,33 @@ static uchar    replyBuffer[4];
             rval = rq->wIndex.bytes[0] & 3;
             rval = signatureBytes[rval];
 #if HAVE_READ_LOCK_FUSE
-#if defined (__AVR_ATmega8__)
+#if defined (__AVR_ATmega8__) || defined (__AVR_ATmega8A__) || defined (__AVR_ATmega32__)
         }else if(rq->wValue.bytes[0] == 0x58 && rq->wValue.bytes[1] == 0x00){  /* read lock bits */
             rval = boot_lock_fuse_bits_get(GET_LOCK_BITS);
         }else if(rq->wValue.bytes[0] == 0x50 && rq->wValue.bytes[1] == 0x00){  /* read lfuse bits */
             rval = boot_lock_fuse_bits_get(GET_LOW_FUSE_BITS);
         }else if(rq->wValue.bytes[0] == 0x58 && rq->wValue.bytes[1] == 0x08){  /* read hfuse bits */
             rval = boot_lock_fuse_bits_get(GET_HIGH_FUSE_BITS);
+
+#elif defined (__AVR_ATmega48__)   || defined (__AVR_ATmega48A__)   || defined (__AVR_ATmega48P__)   || defined (__AVR_ATmega48PA__)  ||  \
+      defined (__AVR_ATmega88__)   || defined (__AVR_ATmega88A__)   || defined (__AVR_ATmega88P__)   || defined (__AVR_ATmega88PA__)  ||  \
+      defined (__AVR_ATmega164A__) || defined (__AVR_ATmega164P__)  || 								      \
+      defined (__AVR_ATmega168__)  || defined (__AVR_ATmega168A__)  || defined (__AVR_ATmega168P__)  || defined (__AVR_ATmega168PA__) ||  \
+      defined (__AVR_ATmega324A__) || defined (__AVR_ATmega324P__)  ||								      \
+      defined (__AVR_ATmega328__)  || defined (__AVR_ATmega328P__)  ||								      \
+      defined (__AVR_ATmega644__)  || defined (__AVR_ATmega644A__)  || defined (__AVR_ATmega644P__) || defined (__AVR_ATmega644PA__)  ||  \
+      defined (__AVR_ATmega128__)  ||													      \
+      defined (__AVR_ATmega1284__) || defined (__AVR_ATmega1284P__)
+        }else if(rq->wValue.bytes[0] == 0x58 && rq->wValue.bytes[1] == 0x00){  /* read lock bits */
+            rval = boot_lock_fuse_bits_get(GET_LOCK_BITS);
+        }else if(rq->wValue.bytes[0] == 0x50 && rq->wValue.bytes[1] == 0x00){  /* read lfuse bits */
+            rval = boot_lock_fuse_bits_get(GET_LOW_FUSE_BITS);
+        }else if(rq->wValue.bytes[0] == 0x58 && rq->wValue.bytes[1] == 0x08){  /* read hfuse bits */
+            rval = boot_lock_fuse_bits_get(GET_HIGH_FUSE_BITS);
+        }else if(rq->wValue.bytes[0] == 0x50 && rq->wValue.bytes[1] == 0x08){  /* read efuse bits */
+            rval = boot_lock_fuse_bits_get(GET_EXTENDED_FUSE_BITS );
+#else
+	#warning "HAVE_READ_LOCK_FUSE is activated but MCU unknown -> will not support this feature"
 #endif
 #endif
 #if HAVE_EEPROM_BYTE_ACCESS
