@@ -4,7 +4,7 @@
  * Creation Date: 2012-08-01
  * Copyright: (c) 2012 by Stephan Baerwolf
  * License: GNU GPL v2 (see License.txt)
- * Version: 0.7
+ * Version: 0.8
  */
 
 #ifndef SPMINTERFACE_H_f70ba6adf7624275947e859bdbff0599
@@ -106,7 +106,7 @@ ret
       #define  funcaddr___bootloader__do_spm (&bootloader__do_spm)
     #endif  
   #else
-    #if defined (__AVR_ATmega8__) || defined (__AVR_ATmega8HVA__)
+    #if defined (__AVR_ATmega8__) || defined (__AVR_ATmega8A__) || defined (__AVR_ATmega8HVA__)
       #define  funcaddr___bootloader__do_spm 0x1826
       
     #else
@@ -179,7 +179,11 @@ void do_spm(const uint32_t flash_byteaddress, const uint8_t spmcrval, const uint
  * try to make this array as big as possible
  * (so bootloader always uses 2kbytes flash)
  */
-#if defined (__AVR_ATmega8__) || defined (__AVR_ATmega8HVA__)
+#if defined (__AVR_ATmega8__) || defined (__AVR_ATmega8A__) || defined (__AVR_ATmega8HVA__)
+
+#if (BOOTLOADER_ADDRESS != 0x1800)
+  #error BOOTLOADER_ADDRESS!=0x1800, on current MCU "funcaddr___bootloader__do_spm" might be currupted - please edit spminterface.h for nonstandard use
+#endif
 //assume  SPMCR==0x37, SPMEN==0x0, RWWSRE=0x4, RWWSB=0x6
 const uint16_t bootloader__do_spm[17] BOOTLIBLINK = {0x0000, 0x2dec, 0x2dfd, 0xb6b7, 0xfcb0, 0xcffd, 0xbf27, 0x95e8, 0xb6b7,
 						     0xfcb0, 0xcffd, 0xe121, 0xb6b7, 0xfcb6, 0xcff4, 0x9508, 0xFFFF};
