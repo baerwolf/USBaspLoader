@@ -109,7 +109,11 @@ ret
     #if defined (__AVR_ATmega8__) || defined (__AVR_ATmega8A__) || defined (__AVR_ATmega8HVA__)
       #define  funcaddr___bootloader__do_spm 0x1826
     #elif defined (__AVR_ATmega32__)
-      #define  funcaddr___bootloader__do_spm 0x7054      
+      #define  funcaddr___bootloader__do_spm 0x7054
+    #elif defined (__AVR_ATmega88__) || defined (__AVR_ATmega88P__) || defined (__AVR_ATmega88A__) || defined (__AVR_ATmega88PA__)  
+      #define  funcaddr___bootloader__do_spm 0x1834
+    #elif defined (__AVR_ATmega168__) || defined (__AVR_ATmega168P__) || defined (__AVR_ATmega168A__) || defined (__AVR_ATmega168PA__)  
+      #define  funcaddr___bootloader__do_spm 0x3868
     #else
       #error "unknown MCU - where is bootloader__do_spm located?"
     #endif
@@ -193,6 +197,7 @@ void do_spm(const uint32_t flash_byteaddress, const uint8_t spmcrval, const uint
 #else
   #error undefined device selection - this should not happen! 
 #endif
+
 //assume  SPMCR==0x37, SPMEN==0x0, RWWSRE=0x4, RWWSB=0x6
 const uint16_t bootloader__do_spm[17] BOOTLIBLINK = {0x0000, 0x2dec, 0x2dfd, 0xb6b7, 0xfcb0, 0xcffd, 0xbf27, 0x95e8, 0xb6b7,
 						      0xfcb0, 0xcffd, 0xe121, 0xb6b7, 0xfcb6, 0xcff4, 0x9508, 0xFFFF};
@@ -227,7 +232,20 @@ const uint16_t bootloader__do_spm[17] BOOTLIBLINK = {0x0000, 0x2dec, 0x2dfd, 0xb
 #elif defined (__AVR_ATmega48__) || defined (__AVR_ATmega48P__) || defined (__AVR_ATmega88__) || defined (__AVR_ATmega88P__) || defined (__AVR_ATmega168__) || defined (__AVR_ATmega168P__)
 //assume  SPMCR:=SPMCSR==0x37, SPMEN:=SELFPRGEN==0x0, RWWSRE=0x4, RWWSB=0x6
 const uint16_t bootloader__do_spm[17] BOOTLIBLINK = {0x0000, 0x2dec, 0x2dfd, 0xb6b7, 0xfcb0, 0xcffd, 0xbf27, 0x95e8, 0xb6b7,
-						     0xfcb0, 0xcffd, 0xe121, 0xb6b7, 0xfcb6, 0xcff4, 0x9508, 0xFFFF};
+						      0xfcb0, 0xcffd, 0xe121, 0xb6b7, 0xfcb6, 0xcff4, 0x9508, 0xFFFF};
+
+#if defined (__AVR_ATmega88__) || defined (__AVR_ATmega88P__)
+  #if (BOOTLOADER_ADDRESS != 0x1800)
+    #error BOOTLOADER_ADDRESS!=0x1800, on current MCU "funcaddr___bootloader__do_spm" might be currupted - please edit spminterface.h for nonstandard use
+  #endif
+#elif defined (__AVR_ATmega168__) || defined (__AVR_ATmega168P__)
+  #if (BOOTLOADER_ADDRESS != 0x3800)
+    #error BOOTLOADER_ADDRESS!=0x3800, on current MCU "funcaddr___bootloader__do_spm" might be currupted - please edit spminterface.h for nonstandard use
+  #endif
+#else
+  #error undefined device selection - this should not happen! 
+#endif
+
 /*
 00001826 <bootloader__do_spm>:
     1826:	00 00       	nop
@@ -257,6 +275,19 @@ const uint16_t bootloader__do_spm[17] BOOTLIBLINK = {0x0000, 0x2dec, 0x2dfd, 0xb
 
 
 #elif defined (__AVR_ATmega48A__) || defined (__AVR_ATmega48PA__) || defined (__AVR_ATmega88A__) || defined (__AVR_ATmega88PA__) || defined (__AVR_ATmega168A__) || defined (__AVR_ATmega168PA__) || defined (__AVR_ATmega328__) || defined (__AVR_ATmega328P__)
+
+#if defined (__AVR_ATmega88A__) || defined (__AVR_ATmega88PA__)
+  #if (BOOTLOADER_ADDRESS != 0x1800)
+    #error BOOTLOADER_ADDRESS!=0x1800, on current MCU "funcaddr___bootloader__do_spm" might be currupted - please edit spminterface.h for nonstandard use
+  #endif
+#elif defined (__AVR_ATmega168A__) || defined (__AVR_ATmega168PA__)
+  #if (BOOTLOADER_ADDRESS != 0x3800)
+    #error BOOTLOADER_ADDRESS!=0x3800, on current MCU "funcaddr___bootloader__do_spm" might be currupted - please edit spminterface.h for nonstandard use
+  #endif
+#else
+  #error undefined device selection - this should not happen! 
+#endif
+
 //assume  SPMCR:=SPMCSR==0x37, SPMEN:=SELFPRGEN==0x0, RWWSRE=0x4, RWWSB=0x6
 const uint16_t bootloader__do_spm[17] BOOTLIBLINK = {0x0000, 0x2dec, 0x2dfd, 0xb6b7, 0xfcb0, 0xcffd, 0xbf27, 0x95e8, 0xb6b7,
 						     0xfcb0, 0xcffd, 0xe121, 0xb6b7, 0xfcb6, 0xcff4, 0x9508, 0xFFFF};
