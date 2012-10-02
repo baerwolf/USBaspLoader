@@ -22,85 +22,78 @@ PROGRAMMER = -c usbasp
 
 #  since USBaspLoader supports HAVE_BLB11_SOFTW_LOCKBIT...
 LOCKOPT = -U lock:w:0x3f:m
-FUSEOPT = $(FUSEOPT_8)
 
 # standard atmega8 needs BODLEVEL to be programed, since it is a 5V device
 # you may also want to UNprogram  SUT1 to get a SLOWER bootup (lfuse then would be 0x3f)
 FUSEOPT_8 = -U hfuse:w:0xc0:m -U lfuse:w:0x1f:m
 
-FUSEOPT_88 = -U hfuse:w:0xd6:m -U lfuse:w:0xdf:m -U efuse:w:0x00:m
-FUSEOPT_168 = -U hfuse:w:0xd6:m -U lfuse:w:0xdf:m -U efuse:w:0x00:m
-FUSEOPT_328 = -U lfuse:w:0xf7:m -U hfuse:w:0xda:m -U efuse:w:0x03:m
-# You may have to change the order of these -U commands.
+#untested (WARNING: may destroy ISP ability!)
+#device always should select maximum bootloader-section size
+#please mail tests-reports to matrixstorm@gmx.de:
+FUSEOPT_32   = unknown
+FUSEOPT_88   = -U hfuse:w:0xd6:m -U lfuse:w:0xdf:m -U efuse:w:0x00:m
+FUSEOPT_164  = unknown
+FUSEOPT_168  = -U hfuse:w:0xd6:m -U lfuse:w:0xdf:m -U efuse:w:0x00:m
+FUSEOPT_324  = unknown
+FUSEOPT_328  = -U lfuse:w:0xf7:m -U hfuse:w:0xda:m -U efuse:w:0x03:m
+FUSEOPT_644  = unknown
+FUSEOPT_128  = unknown
+FUSEOPT_1284 = unknown
 
-#---------------------------------------------------------------------
-# ATMega8
-#---------------------------------------------------------------------
-# Fuse high byte:
-# 0xc0 = 1 1 0 0   0 0 0 0 <-- BOOTRST (boot reset vector at 0x1800)
-#        ^ ^ ^ ^   ^ ^ ^------ BOOTSZ0
-#        | | | |   | +-------- BOOTSZ1
-#        | | | |   + --------- EESAVE (preserve EEPROM over chip erase)
-#        | | | +-------------- CKOPT (full output swing)
-#        | | +---------------- SPIEN (allow serial programming)
-#        | +------------------ WDTON (WDT not always on)
-#        +-------------------- RSTDISBL (reset pin is enabled)
-# Fuse low byte:
-# 0x1f = 0 0 0 1   1 1 1 1
-#        ^ ^ \ /   \--+--/
-#        | |  |       +------- CKSEL 3..0 (external >8M crystal)
-#        | |  +--------------- SUT 1..0 (crystal osc, BOD enabled)
-#        | +------------------ BODEN (BrownOut Detector enabled)
-#        +-------------------- BODLEVEL (4.5V)
-#---------------------------------------------------------------------
-# ATMega88, ATMega168
-#---------------------------------------------------------------------
-# Fuse extended byte:
-# 0x00 = 0 0 0 0   0 0 0 0 <-- BOOTRST (boot reset vector at 0x1800)
-#                    \+/
-#                     +------- BOOTSZ (00 = 2k bytes)
-# Fuse high byte:
-# 0xd6 = 1 1 0 1   0 1 1 0
-#        ^ ^ ^ ^   ^ \-+-/
-#        | | | |   |   +------ BODLEVEL 0..2 (110 = 1.8 V)
-#        | | | |   + --------- EESAVE (preserve EEPROM over chip erase)
-#        | | | +-------------- WDTON (if 0: watchdog always on)
-#        | | +---------------- SPIEN (allow serial programming)
-#        | +------------------ DWEN (debug wire enable)
-#        +-------------------- RSTDISBL (reset pin is enabled)
-# Fuse low byte:
-# 0xdf = 1 1 0 1   1 1 1 1
-#        ^ ^ \ /   \--+--/
-#        | |  |       +------- CKSEL 3..0 (external >8M crystal)
-#        | |  +--------------- SUT 1..0 (crystal osc, BOD enabled)
-#        | +------------------ CKOUT (if 0: Clock output enabled)
-#        +-------------------- CKDIV8 (if 0: divide by 8)
-#---------------------------------------------------------------------
-# ATMega328P
-#---------------------------------------------------------------------
-# Fuse extended byte:
-# 0x03 = - - - -   - 0 1 1
-#                    \-+-/
-#                      +------ BODLEVEL 0..2 (011 = 4.3V)
-# Fuse high byte:
-# 0xda = 1 1 0 1   1 0 1 0 <-- BOOTRST (0 = jump to bootloader at start)
-#        ^ ^ ^ ^   ^ \+/
-#        | | | |   |  +------- BOOTSZ 0..1 (01 = 2KB starting at 0x7800)
-#        | | | |   + --------- EESAVE (don't preserve EEPROM over chip erase)
-#        | | | +-------------- WDTON (1 = watchdog disabled at start)
-#        | | +---------------- SPIEN (0 = allow serial programming)
-#        | +------------------ DWEN (1 = debug wire disable)
-#        +-------------------- RSTDISBL (1 = reset pin is enabled)
-# Fuse low byte:
-# 0xf7 = 1 1 1 1   0 1 1 1
-#        ^ ^ \ /   \--+--/
-#        | |  |       +------- CKSEL 3..0 (0111 = external full-swing crystal)
-#        | |  +--------------- SUT 1..0 (11 = startup time 16K CK/14K + 65ms)
-#        | +------------------ CKOUT (1 = clock output disabled)
-#        +-------------------- CKDIV8 (1 = do not divide clock by 8)
+ifeq ($(DEVICE), atmega8)
+  FUSEOPT = $(FUSEOPT_8)
+else ifeq ($(DEVICE), atmega32)
+  FUSEOPT = $(FUSEOPT_32)
+else ifeq ($(DEVICE), atmega88)
+  FUSEOPT = $(FUSEOPT_88)
+else ifeq ($(DEVICE), atmega88a)
+  FUSEOPT = $(FUSEOPT_88)
+else ifeq ($(DEVICE), atmega88p)
+  FUSEOPT = $(FUSEOPT_88)
+else ifeq ($(DEVICE), atmega88pa)
+  FUSEOPT = $(FUSEOPT_88)
+else ifeq ($(DEVICE), atmega164a)
+  FUSEOPT = $(FUSEOPT_164)
+else ifeq ($(DEVICE), atmega164p)
+  FUSEOPT = $(FUSEOPT_164)
+else ifeq ($(DEVICE), atmega164pa)
+  FUSEOPT = $(FUSEOPT_164)
+else ifeq ($(DEVICE), atmega168)
+  FUSEOPT = $(FUSEOPT_168)
+else ifeq ($(DEVICE), atmega168a)
+  FUSEOPT = $(FUSEOPT_168)
+else ifeq ($(DEVICE), atmega168p)
+  FUSEOPT = $(FUSEOPT_168)
+else ifeq ($(DEVICE), atmega168pa)
+  FUSEOPT = $(FUSEOPT_168)
+else ifeq ($(DEVICE), atmega324a)
+  FUSEOPT = $(FUSEOPT_324)
+else ifeq ($(DEVICE), atmega324p)
+  FUSEOPT = $(FUSEOPT_324)
+else ifeq ($(DEVICE), atmega324pa)
+  FUSEOPT = $(FUSEOPT_324)
+else ifeq ($(DEVICE), atmega328)
+  FUSEOPT = $(FUSEOPT_328)
+else ifeq ($(DEVICE), atmega328p)
+  FUSEOPT = $(FUSEOPT_328)
+else ifeq ($(DEVICE), atmega644)
+  FUSEOPT = $(FUSEOPT_644)
+else ifeq ($(DEVICE), atmega644a)
+  FUSEOPT = $(FUSEOPT_644)
+else ifeq ($(DEVICE), atmega644p)
+  FUSEOPT = $(FUSEOPT_644)
+else ifeq ($(DEVICE), atmega644pa)
+  FUSEOPT = $(FUSEOPT_644)
+else ifeq ($(DEVICE), atmega128)
+  FUSEOPT = $(FUSEOPT_128)
+else ifeq ($(DEVICE), atmega1284)
+  FUSEOPT = $(FUSEOPT_1284)
+else ifeq ($(DEVICE), atmega1284p)
+  FUSEOPT = $(FUSEOPT_1284)
+else
+  FUSEOPT = unknown
+endif
 
-
-###############################################################################
 
 # Tools:
 AVRPATH = $(AVR8TOOLCHAINBINDIR)
