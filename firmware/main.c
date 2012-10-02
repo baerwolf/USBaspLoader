@@ -139,16 +139,42 @@ static const uchar      	currentRequest = 0;
 static const uchar  signatureBytes[4] = {
 #ifdef SIGNATURE_BYTES
     SIGNATURE_BYTES
-#elif defined (__AVR_ATmega8__) || defined (__AVR_ATmega8HVA__)
+#elif defined (__AVR_ATmega8__) || defined (__AVR_ATmega8A__) || defined (__AVR_ATmega8HVA__)
     0x1e, 0x93, 0x07, 0
-#elif defined (__AVR_ATmega48__) || defined (__AVR_ATmega48P__)
+#elif defined (__AVR_ATmega48__) || defined (__AVR_ATmega48A__) || defined (__AVR_ATmega48P__)
     0x1e, 0x92, 0x05, 0
-#elif defined (__AVR_ATmega88__) || defined (__AVR_ATmega88P__)
+#elif defined (__AVR_ATmega48PA__)
+    0x1e, 0x92, 0x0A, 0
+#elif defined (__AVR_ATmega88__) || defined (__AVR_ATmega88A__) || defined (__AVR_ATmega88P__)
     0x1e, 0x93, 0x0a, 0
-#elif defined (__AVR_ATmega168__) || defined (__AVR_ATmega168P__)
+#elif defined (__AVR_ATmega88PA__)
+    0x1e, 0x93, 0x0F, 0
+#elif defined (__AVR_ATmega164A__)
+    0x1e, 0x94, 0x0f, 0
+#elif defined (__AVR_ATmega164P__)
+    0x1e, 0x94, 0x0a, 0
+#elif defined (__AVR_ATmega168__) || defined (__AVR_ATmega168A__) || defined (__AVR_ATmega168P__)
     0x1e, 0x94, 0x06, 0
+#elif defined (__AVR_ATmega168PA__)
+    0x1e, 0x94, 0x0B, 0
+#elif defined (__AVR_ATmega32__)
+    0x1e, 0x95, 0x02, 0
+#elif defined (__AVR_ATmega324A__)
+    0x1e, 0x95, 0x15, 0
+#elif defined (__AVR_ATmega324P__)
+    0x1e, 0x95, 0x08, 0
+#elif defined (__AVR_ATmega328__)
+    0x1e, 0x95, 0x14, 0
 #elif defined (__AVR_ATmega328P__)
     0x1e, 0x95, 0x0f, 0
+#elif defined (__AVR_ATmega644__) || defined (__AVR_ATmega644A__)
+    0x1e, 0x96, 0x09, 0
+#elif defined (__AVR_ATmega644P__) || defined (__AVR_ATmega644PA__)
+    0x1e, 0x96, 0x0a, 0
+#elif defined (__AVR_ATmega128__)
+    0x1e, 0x97, 0x02, 0
+#elif defined (__AVR_ATmega1284__)
+    0x1e, 0x97, 0x06, 0
 #elif defined (__AVR_ATmega1284P__)
     0x1e, 0x97, 0x05, 0
 #else
