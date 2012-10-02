@@ -1,9 +1,9 @@
 This is the README file for USBaspLoader.
 
 USBaspLoader is a USB boot loader for AVR microcontrollers. It can be used on
-all AVRs with at least 2 kB of boot loader section, e.g. the popular ATMega8.
-The firmware is flashed into the upper 2 kB of the flash memory and takes
-control immediately after reset. If a certain hardware condition is met
+most AVRs with at least 2 kB of boot loader section, e.g. the popular ATMega8.
+The firmware is flashed into the bootloader-section of the flash memory and
+takes control immediately after reset. If a certain hardware condition is met
 (this condition can be configured, e.g. a jumper), the boot loader waits for
 data on the USB interface and loads it into the remaining part of the flash
 memory. If the condition is not met, control is passed to the loaded firmware.
@@ -25,6 +25,7 @@ firmware .......... Source code of the controller firmware.
 firmware/usbdrv ... USB driver -- See Readme.txt in that directory for info
 License.txt ....... Public license (GPL2) for all contents of this project.
 Changelog.txt ..... Logfile documenting changes in soft-, firm- and hardware.
+Schematic.txt ..... File giving infos about default and recommended hw-layout.
 
 
 BUILDING AND INSTALLING
@@ -41,10 +42,12 @@ You need WinAVR for the firmware, see http://winavr.sourceforge.net/.
 To build the firmware with WinAVR, change into the "firmware" directory,
 check whether you need to edit the "Makefile" (e.g. change device settings,
 programmer hardware, clock rate etc.) or bootloaderconfig.h and type "make"
-to compile the source code. Before you upload the code to the device with
-"make flash", you should set the fuses with "make fuse". To protect the boot
-loader from overwriting itself, set the lock bits with "make lock" after
-uploading the firmware.
+to compile the source code. After you upload the code to the device with
+"make flash", you should set the fuses with "make fuse".
+At default configuration the bootloader protects itself from overwriting
+itself. In order to sustain the new update-capability, no lock bits 
+("make lock") should be programmed after uploading the firmware and
+programming the fuse bits.
 
 Building on Unix (Linux, FreeBSD and Mac):
 You need the GNU toolchain and avr-libc for the firmware. See
@@ -56,8 +59,7 @@ avr-libc on Unix. For Mac OS X, we provide a read-made package, see
 To build the firmware, change to the "firmware" directory, edit "Makefile"
 and bootloaderconfig.h as described in the Windows paragraph above and type
 "make" to compile the source code. Before you upload the code to the device
-with "make flash", you should set the fuses with "make fuse". Then protect the
-boot loader firmware with "make lock".
+with "make flash", you should set the fuses with "make fuse".
 
 
 WORKING WITH THE BOOT LOADER
@@ -99,6 +101,9 @@ directory for details.
 
 MORE INFORMATION
 ================
+For questions, reports, suggestions or just for fun please contact
+Stephan Baerwolf (matrixstorm@gmx.de)
+
 For more information about Objective Development's firmware-only USB driver
 for Atmel's AVR microcontrollers please visit the URL
 
@@ -109,5 +114,10 @@ file "firmware/usbdrv/usbdrv.h".
 
 
 --
+recent version:
+(c) 2012 by Stephan Baerwolf
+matrixstorm@gmx.de
+
+initial version:
 (c) 2008 by OBJECTIVE DEVELOPMENT Software GmbH.
 http://www.obdev.at/
