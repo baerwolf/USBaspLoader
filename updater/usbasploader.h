@@ -1,6 +1,6 @@
 
-#ifndef FIRMWARE_H_5f27a7e9840141b1aa57eef07c1d939f
-#define FIRMWARE_H_5f27a7e9840141b1aa57eef07c1d939f 1
+#ifndef USBASPLOADER_H_5f27a7e9840141b1aa57eef07c1d939f
+#define USBASPLOADER_H_5f27a7e9840141b1aa57eef07c1d939f 1
 
 #include <stdint.h>
 #include <avr/io.h>
