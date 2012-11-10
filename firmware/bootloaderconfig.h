@@ -1,7 +1,9 @@
 /* Name: bootloaderconfig.h
  * Project: USBaspLoader
  * Author: Christian Starkjohann
+ * Author: Stephan Baerwolf
  * Creation Date: 2007-12-08
+ * Modification Date: 2012-11-10
  * Tabsize: 4
  * Copyright: (c) 2007 by OBJECTIVE DEVELOPMENT Software GmbH
  * License: GNU GPL v2 (see License.txt)
@@ -36,25 +38,50 @@ names BOOTLOADER_INIT and BOOTLOADER_CONDITION for this functionality. If
 these macros are defined, the boot loader usees them.
 */
 
+/* ---------------------------- Macro Magic ---------------------------- */
+#define		PIN_CONCAT(a,b)			a ## b
+#define		PIN_CONCAT3(a,b,c)		a ## b ## c
+
+#define		PIN_PORT(a)			PIN_CONCAT(PORT, a)
+#define		PIN_PIN(a)			PIN_CONCAT(PIN, a)
+#define		PIN_DDR(a)			PIN_CONCAT(DDR, a)
+
+#define		PIN(a, b)			PIN_CONCAT3(P, a, b)
+
 /* ---------------------------- Hardware Config ---------------------------- */
 
-#define USB_CFG_IOPORTNAME      D
+#ifndef USB_CFG_IOPORTNAME
+  #define USB_CFG_IOPORTNAME      D
+#endif
 /* This is the port where the USB bus is connected. When you configure it to
  * "B", the registers PORTB, PINB and DDRB will be used.
  */
-#define JUMPER_BIT		7	/* old value was 0 */
-/* 
- * jumper is connected to this bit in port D, active low
- */
-#define USB_CFG_DMINUS_BIT      6	/* old value was 4 */
+#ifndef USB_CFG_DMINUS_BIT
+  #define USB_CFG_DMINUS_BIT      6	/* old value was 4 */
+#endif
 /* This is the bit number in USB_CFG_IOPORT where the USB D- line is connected.
  * This may be any bit in the port.
  */
-#define USB_CFG_DPLUS_BIT       2
+#ifndef USB_CFG_DPLUS_BIT
+  #define USB_CFG_DPLUS_BIT       2
+#endif
 /* This is the bit number in USB_CFG_IOPORT where the USB D+ line is connected.
  * This may be any bit in the port. Please note that D+ must also be connected
  * to interrupt pin INT0!
  */
+#ifndef JUMPER_PORT
+  #define JUMPER_PORT		USB_CFG_IOPORTNAME
+#endif
+/* 
+ * jumper is connected to this port
+ */
+#ifndef JUMPER_BIT
+  #define JUMPER_BIT		7	/* old value was 0 */
+#endif
+/* 
+ * jumper is connected to this bit in port "JUMPER_PORT", active low
+ */
+
 #define USB_CFG_CLOCK_KHZ       (F_CPU/1000)
 /* Clock rate of the AVR in MHz. Legal values are 12000, 16000 or 16500.
  * The 16.5 MHz version of the code requires no crystal, it tolerates +/- 1%
@@ -81,19 +108,31 @@ these macros are defined, the boot loader usees them.
 /* ---------------------- feature / code size options ---------------------- */
 /* ------------------------------------------------------------------------- */
 
-#define HAVE_READ_LOCK_FUSE	    1
+#ifndef CONFIG_NO__HAVE_READ_LOCK_FUSE
+  #define HAVE_READ_LOCK_FUSE	    1
+#else
+  #define HAVE_READ_LOCK_FUSE	    0
+#endif
 /*
  * enable the loaders capability to load its lfuse, hfuse and lockbits
  * ...However, programming of these is prohibited...
  */
 
-#define HAVE_BLB11_SOFTW_LOCKBIT    1
+#ifndef CONFIG_NO__HAVE_BLB11_SOFTW_LOCKBIT
+  #define HAVE_BLB11_SOFTW_LOCKBIT    1
+#else
+  #define HAVE_BLB11_SOFTW_LOCKBIT    0
+#endif
 /*
  * The IC itself do not need to prgra BLB11, but the bootloader will avaoid 
  * to erase itself from the bootregion
  */
 
-#define HAVE_SPMINTEREFACE	    1
+#ifndef CONFIG_NO__HAVE_SPMINTEREFACE
+  #define HAVE_SPMINTEREFACE	    1
+#else
+  #define HAVE_SPMINTEREFACE	    0
+#endif
 /*
  * Since code within normal section of application memory (rww-section) is
  * not able to call spm for programming flash-pages, this option (when
@@ -117,13 +156,28 @@ these macros are defined, the boot loader usees them.
  * signature) does not support page mode for EEPROM. It is required for
  * accessing the EEPROM on the ATMega8. Costs ~54 bytes.
  */
-#define BOOTLOADER_CAN_EXIT         0
+#ifndef CONFIG_NO__BOOTLOADER_CAN_EXIT
+  #define BOOTLOADER_CAN_EXIT         1
+#else
+  #define BOOTLOADER_CAN_EXIT         0
+#endif
 /* If this macro is defined to 1, the boot loader will exit shortly after the
- * programmer closes the connection to the device. Costs ~36 bytes.
+ * programmer closes the connection to the device. Costs extra bytes.
  */
 #define HAVE_CHIP_ERASE             0
 /* If this macro is defined to 1, the boot loader implements the Chip Erase
  * ISP command. Otherwise pages are erased on demand before they are written.
+ */
+#ifndef CONFIG_NO__NEED_WATCHDOG
+  #define NEED_WATCHDOG		1
+#else
+  #define NEED_WATCHDOG		0
+#endif
+/* ATTANTION: This macro MUST BE 1, if the MCU has reset enabled watchdog (WDTON is 0).
+ * If this macro is defined to 1, the bootloader implements an additional "wdt_disable()"
+ * after its contional entry point.
+ * If the used MCU is fused not to enable watchdog after reset (WDTON is 1 - safty level 1)
+ * then "NEED_WATCHDOG" may be deactivated in order to save some memory.
  */
 //#define SIGNATURE_BYTES             0x1e, 0x93, 0x07, 0     /* ATMega8 */
 /* This macro defines the signature bytes returned by the emulated USBasp to
@@ -132,20 +186,6 @@ these macros are defined, the boot loader usees them.
  * ATMega88, ATMega168 and ATMega328 are guessed correctly.
  */
 
-/* The following block guesses feature options so that the resulting code
- * should fit into 2k bytes boot block with the given device and clock rate.
- * Activate by passing "-DUSE_AUTOCONFIG=1" to the compiler.
- * This requires gcc 3.4.6 for small enough code size!
- */
-#if USE_AUTOCONFIG
-#   undef HAVE_EEPROM_PAGED_ACCESS
-#   define HAVE_EEPROM_PAGED_ACCESS     (USB_CFG_CLOCK_KHZ >= 16000)
-#   undef HAVE_EEPROM_BYTE_ACCESS
-#   define HAVE_EEPROM_BYTE_ACCESS      1
-#   undef BOOTLOADER_CAN_EXIT
-#   define BOOTLOADER_CAN_EXIT          1
-#   undef SIGNATURE_BYTES
-#endif /* USE_AUTOCONFIG */
 
 /* ------------------------------------------------------------------------- */
 
@@ -165,20 +205,22 @@ these macros are defined, the boot loader usees them.
 
 static inline void  bootLoaderInit(void)
 {
-    DDRD   = 0;
-    PORTD  = (1 << JUMPER_BIT);     /* activate pull-up */
+    PIN_DDR(JUMPER_PORT)  = 0;
+    PIN_PORT(JUMPER_PORT) = (1<< PIN(JUMPER_PORT, JUMPER_BIT)); /* activate pull-up */
+
 //     deactivated by Stephan - reset after each avrdude op is annoing!
 //     if(!(MCUCSR & (1 << EXTRF)))    /* If this was not an external reset, ignore */
 //         leaveBootloader();
+
     MCUCSR = 0;                     /* clear all reset flags for next time */
 }
 
 static inline void  bootLoaderExit(void)
 {
-    PORTD = 0;                      /* undo bootLoaderInit() changes */
+    PIN_PORT(JUMPER_PORT) = 0;		/* undo bootLoaderInit() changes */
 }
 
-#define bootLoaderCondition()		((PIND & (1 << JUMPER_BIT)) == 0)
+#define bootLoaderCondition()		((PIN_PIN(JUMPER_PORT) & (1 << PIN(JUMPER_PORT, JUMPER_BIT))) == 0)
 
 #endif /* __ASSEMBLER__ */
 

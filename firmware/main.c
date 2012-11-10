@@ -1,7 +1,9 @@
 /* Name: main.c
  * Project: USBaspLoader
  * Author: Christian Starkjohann
+ * Author: Stephan Baerwolf
  * Creation Date: 2007-12-08
+ * Modification Date: 2012-11-10
  * Tabsize: 4
  * Copyright: (c) 2007 by OBJECTIVE DEVELOPMENT Software GmbH
  * License: GNU GPL v2 (see License.txt)
@@ -80,16 +82,6 @@ static void leaveBootloader() __attribute__((__noreturn__));
 #   define uint     unsigned int
 #endif
 
-/* defaults if not in config file: */
-#ifndef HAVE_EEPROM_PAGED_ACCESS
-#   define HAVE_EEPROM_PAGED_ACCESS 0
-#endif
-#ifndef HAVE_EEPROM_BYTE_ACCESS
-#   define HAVE_EEPROM_BYTE_ACCESS  0
-#endif
-#ifndef BOOTLOADER_CAN_EXIT
-#   define  BOOTLOADER_CAN_EXIT     0
-#endif
 
 /* allow compatibility with avrusbboot's bootloaderconfig.h: */
 #ifdef BOOTLOADER_INIT
@@ -123,9 +115,8 @@ typedef union longConverter{
 
 
 #if BOOTLOADER_CAN_EXIT
-static uchar            	requestBootLoaderExit;
-#endif
 static volatile unsigned char	stayinloader = 0xfe;
+#endif
 
 static longConverter_t  	currentAddress; /* in bytes */
 static uchar            	bytesRemaining;
@@ -299,13 +290,15 @@ static uchar    replyBuffer[4];
         }
 
     }else if(rq->bRequest == USBASP_FUNC_DISCONNECT){
-      stayinloader	   &= (0xfe);
+
 #if BOOTLOADER_CAN_EXIT
-      requestBootLoaderExit = 1;      /* allow proper shutdown/close of connection */
+      stayinloader	   &= (0xfe);
 #endif
     }else{
         /* ignore: others, but could be USBASP_FUNC_CONNECT */
+#if BOOTLOADER_CAN_EXIT
 	stayinloader	   |= (0x01);
+#endif
     }
     return len;
 }
@@ -413,21 +406,13 @@ int __attribute__((noreturn)) main(void)
     GICR = (1 << IVSEL); /* move interrupts to boot flash section */
 #endif
     if(bootLoaderCondition()){
+#if NEED_WATCHDOG
 	wdt_disable();    /* main app may have enabled watchdog */
-#if BOOTLOADER_CAN_EXIT
-        uchar i = 0, j = 0;
 #endif
         initForUsbConnectivity();
         do{
             usbPoll();
 #if BOOTLOADER_CAN_EXIT
-            if(requestBootLoaderExit){
-                if(--i == 0){
-                    if(--j == 0)
-                        break;
-                }
-            }
-#endif
 	if (stayinloader >= 0x10) {
 	  if (!bootLoaderCondition()) {
 	    stayinloader-=0x10;
@@ -437,8 +422,13 @@ int __attribute__((noreturn)) main(void)
 	    if (stayinloader > 1) stayinloader-=2;
 	  }
 	}
+#endif
 
-        }while (stayinloader);  /* main event loop */
+#if BOOTLOADER_CAN_EXIT
+        }while (stayinloader);	/* main event loop, if BOOTLOADER_CAN_EXIT*/
+#else
+        }while (1);  		/* main event loop */
+#endif
     }
     leaveBootloader();
 }
