@@ -4,7 +4,7 @@
  * Creation Date: 2012-08-01
  * Copyright: (c) 2012 by Stephan Baerwolf
  * License: GNU GPL v2 (see License.txt)
- * Version: 0.8
+ * Version: 0.85
  */
 
 #ifndef SPMINTERFACE_H_f70ba6adf7624275947e859bdbff0599
@@ -211,9 +211,8 @@ void do_spm(const uint32_t flash_byteaddress, const uint8_t spmcrval, const uint
 #endif
 
 //assume  SPMCR==0x37, SPMEN==0x0, RWWSRE=0x4, RWWSB=0x6
-const uint16_t bootloader__do_spm[20] BOOTLIBLINK = {0x0000, 0x2dec, 0x2dfd, 0xb6b7, 0xfcb0, 0xcffd, 0xbf27, 0x95e8, 0xb6b7,
-						      0xfcb0, 0xcffd, 0xe121, 0xb6b7, 0xfcb6, 0xcff4, 0x9508, 0xFFFF, 0xFFFF,
-						      0xFFFF, 0xFFFF};
+const uint16_t bootloader__do_spm[16] BOOTLIBLINK = {0x0000, 0x2dec, 0x2dfd, 0xb6b7, 0xfcb0, 0xcffd, 0xbf27, 0x95e8, 0xb6b7,
+						      0xfcb0, 0xcffd, 0xe121, 0xb6b7, 0xfcb6, 0xcff4, 0x9508};
 /*
 00001826 <bootloader__do_spm>:
     1826:	00 00       	nop
@@ -244,9 +243,8 @@ const uint16_t bootloader__do_spm[20] BOOTLIBLINK = {0x0000, 0x2dec, 0x2dfd, 0xb
 
 #elif defined (__AVR_ATmega48__) || defined (__AVR_ATmega48P__) || defined (__AVR_ATmega88__) || defined (__AVR_ATmega88P__) || defined (__AVR_ATmega168__) || defined (__AVR_ATmega168P__)
 //assume  SPMCR:=SPMCSR==0x37, SPMEN:=SELFPRGEN==0x0, RWWSRE=0x4, RWWSB=0x6
-const uint16_t bootloader__do_spm[20] BOOTLIBLINK = {0x0000, 0x2dec, 0x2dfd, 0xb6b7, 0xfcb0, 0xcffd, 0xbf27, 0x95e8, 0xb6b7,
-						      0xfcb0, 0xcffd, 0xe121, 0xb6b7, 0xfcb6, 0xcff4, 0x9508, 0xFFFF, 0xFFFF,
-						      0xFFFF, 0xFFFF};
+const uint16_t bootloader__do_spm[15] BOOTLIBLINK = {       0x2dec, 0x2dfd, 0xb6b7, 0xfcb0, 0xcffd, 0xbf27, 0x95e8, 0xb6b7,
+						      0xfcb0, 0xcffd, 0xe121, 0xb6b7, 0xfcb6, 0xcff4, 0x9508};
 
 #if defined (__AVR_ATmega88__) || defined (__AVR_ATmega88P__)
   #if (BOOTLOADER_ADDRESS != 0x1800)
@@ -307,9 +305,8 @@ const uint16_t bootloader__do_spm[20] BOOTLIBLINK = {0x0000, 0x2dec, 0x2dfd, 0xb
 #endif
 
 //assume  SPMCR:=SPMCSR==0x37, SPMEN:=SELFPRGEN==0x0, RWWSRE=0x4, RWWSB=0x6
-const uint16_t bootloader__do_spm[20] BOOTLIBLINK = {0x0000, 0x2dec, 0x2dfd, 0xb6b7, 0xfcb0, 0xcffd, 0xbf27, 0x95e8, 0xb6b7,
-						      0xfcb0, 0xcffd, 0xe121, 0xb6b7, 0xfcb6, 0xcff4, 0x9508, 0xFFFF, 0xFFFF,
-						      0xFFFF, 0xFFFF};
+const uint16_t bootloader__do_spm[15] BOOTLIBLINK = {       0x2dec, 0x2dfd, 0xb6b7, 0xfcb0, 0xcffd, 0xbf27, 0x95e8, 0xb6b7,
+						      0xfcb0, 0xcffd, 0xe121, 0xb6b7, 0xfcb6, 0xcff4, 0x9508};
 /*
 00001826 <bootloader__do_spm>:
     1826:	00 00       	nop
@@ -382,9 +379,8 @@ const uint16_t bootloader__do_spm[20] BOOTLIBLINK = {0xbebb, 0x2dec, 0x2dfd, 0x9
 
 #elif defined (__AVR_ATmega164A__) || defined (__AVR_ATmega164P__) || defined (__AVR_ATmega164PA__) || defined (__AVR_ATmega324A__) || defined (__AVR_ATmega324P__) || defined (__AVR_ATmega324PA__) || defined (__AVR_ATmega644__) || defined (__AVR_ATmega644A__) || defined (__AVR_ATmega644P__) || defined (__AVR_ATmega644PA__) || defined (__AVR_ATmega1284__) || defined (__AVR_ATmega1284P__)
 //assume  SPMCR:=SPCSR==0x37, SPMEN==0x0, RWWSRE=0x4, RWWSB=0x6 and rampZ=0x3b
-const uint16_t bootloader__do_spm[20] BOOTLIBLINK = {0xbebb, 0x2dec, 0x2dfd, 0xb6b7, 0xfcb0, 0xcffd, 0xbf27, 0x95e8, 0xb6b7,
-						      0xfcb0, 0xcffd, 0xe121, 0xb6b7, 0xfcb6, 0xcff4, 0x9508, 0xFFFF, 0xFFFF
-						      0xFFFF, 0xFFFF};
+const uint16_t bootloader__do_spm[16] BOOTLIBLINK = {0xbebb, 0x2dec, 0x2dfd, 0xb6b7, 0xfcb0, 0xcffd, 0xbf27, 0x95e8, 0xb6b7,
+						      0xfcb0, 0xcffd, 0xe121, 0xb6b7, 0xfcb6, 0xcff4, 0x9508};
 
 #if defined (__AVR_ATmega164A__) || defined (__AVR_ATmega164P__) || defined (__AVR_ATmega164PA__)
   #if (BOOTLOADER_ADDRESS != 0x3800)

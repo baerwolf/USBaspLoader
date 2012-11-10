@@ -11,6 +11,11 @@ DEVICE = atmega8
 # where the updating firmware should be located (starting address)
 FLASHADDRESS = 0x0000
 
+# some MCUs with small BLS (bootloader section) need to deactivate some
+# features in order to fit into BLS.
+# If this option is enabled, also essential features may become deactivated
+# Esp. you MUST ensure not to have watchdog initially enabled when using this!
+DANGEROUS=0
 
 # PROGRAMMER contains AVRDUDE options to address your programmer
 # PROGRAMMER = -c pony-stk200
@@ -56,7 +61,16 @@ FUSEOPT_1284            = unknown
 BOOTLOADER_ADDRESS_1284 = 0x1E000
 
 
+
+ifeq ($(DANGEROUS), 1)
+  CHOOSEFLASHSAVE = -DCONFIG_NO__NEED_WATCHDOG
+else
+  CHOOSEFLASHSAVE = -DCONFIG_NO__BOOTLOADER_CAN_EXIT
+endif
+
+
 #autoselect logic
+DEFINES = #-DDEBUG_LEVEL=2
 ifeq ($(DEVICE), atmega8)
   FUSEOPT            = $(FUSEOPT_8)
   BOOTLOADER_ADDRESS = $(BOOTLOADER_ADDRESS_8)  
@@ -66,36 +80,47 @@ else ifeq ($(DEVICE), atmega32)
 else ifeq ($(DEVICE), atmega88)
   FUSEOPT            = $(FUSEOPT_88)
   BOOTLOADER_ADDRESS = $(BOOTLOADER_ADDRESS_88)
+  DEFINES	     += -DCONFIG_NO__HAVE_READ_LOCK_FUSE
 else ifeq ($(DEVICE), atmega88a)
   FUSEOPT            = $(FUSEOPT_88)
   BOOTLOADER_ADDRESS = $(BOOTLOADER_ADDRESS_88)
+  DEFINES	     += -DCONFIG_NO__HAVE_READ_LOCK_FUSE
 else ifeq ($(DEVICE), atmega88p)
   FUSEOPT            = $(FUSEOPT_88)
   BOOTLOADER_ADDRESS = $(BOOTLOADER_ADDRESS_88)
+  DEFINES	     += -DCONFIG_NO__HAVE_READ_LOCK_FUSE
 else ifeq ($(DEVICE), atmega88pa)
   FUSEOPT            = $(FUSEOPT_88)
   BOOTLOADER_ADDRESS = $(BOOTLOADER_ADDRESS_88)
+  DEFINES	     += -DCONFIG_NO__HAVE_READ_LOCK_FUSE
 else ifeq ($(DEVICE), atmega164a)
   FUSEOPT            = $(FUSEOPT_164)
   BOOTLOADER_ADDRESS = $(BOOTLOADER_ADDRESS_164)
+  DEFINES	     += -DCONFIG_NO__HAVE_READ_LOCK_FUSE -DCONFIG_NO__BOOTLOADER_CAN_EXIT
 else ifeq ($(DEVICE), atmega164p)
   FUSEOPT            = $(FUSEOPT_164)
   BOOTLOADER_ADDRESS = $(BOOTLOADER_ADDRESS_164)
+  DEFINES	     += -DCONFIG_NO__HAVE_READ_LOCK_FUSE -DCONFIG_NO__BOOTLOADER_CAN_EXIT
 else ifeq ($(DEVICE), atmega164pa)
   FUSEOPT            = $(FUSEOPT_164)
   BOOTLOADER_ADDRESS = $(BOOTLOADER_ADDRESS_164)
+  DEFINES	     += -DCONFIG_NO__HAVE_READ_LOCK_FUSE -DCONFIG_NO__BOOTLOADER_CAN_EXIT
 else ifeq ($(DEVICE), atmega168)
   FUSEOPT            = $(FUSEOPT_168)
   BOOTLOADER_ADDRESS = $(BOOTLOADER_ADDRESS_168)
+  DEFINES	     += -DCONFIG_NO__HAVE_READ_LOCK_FUSE $(CHOOSEFLASHSAVE)
 else ifeq ($(DEVICE), atmega168a)
   FUSEOPT            = $(FUSEOPT_168)
   BOOTLOADER_ADDRESS = $(BOOTLOADER_ADDRESS_168)
+  DEFINES	     += -DCONFIG_NO__HAVE_READ_LOCK_FUSE $(CHOOSEFLASHSAVE)
 else ifeq ($(DEVICE), atmega168p)
   FUSEOPT            = $(FUSEOPT_168)
   BOOTLOADER_ADDRESS = $(BOOTLOADER_ADDRESS_168)
+  DEFINES	     += -DCONFIG_NO__HAVE_READ_LOCK_FUSE $(CHOOSEFLASHSAVE)
 else ifeq ($(DEVICE), atmega168pa)
   FUSEOPT            = $(FUSEOPT_168)
   BOOTLOADER_ADDRESS = $(BOOTLOADER_ADDRESS_168)
+  DEFINES	     += -DCONFIG_NO__HAVE_READ_LOCK_FUSE $(CHOOSEFLASHSAVE)
 else ifeq ($(DEVICE), atmega324a)
   FUSEOPT            = $(FUSEOPT_324)
   BOOTLOADER_ADDRESS = $(BOOTLOADER_ADDRESS_324)

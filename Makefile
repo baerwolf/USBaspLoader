@@ -14,9 +14,17 @@ firmware: do_firmware
 updater: do_updater
 
 do_firmware:
+	$(ECHO) "."
+	$(ECHO) "."
+	$(ECHO) "======>BUILDING BOOTLOADER FIRMWARE"
+	$(ECHO) "."
 	$(MAKE) -C firmware all
 
 do_updater:
+	$(ECHO) "."
+	$(ECHO) "."
+	$(ECHO) "======>BUILDING BOOTLOADER UPDATER (EXPERIMENTAL)"
+	$(ECHO) "."
 	$(MAKE) -C updater all
 
 deepclean: clean
