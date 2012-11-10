@@ -40,7 +40,7 @@ all:  updater.hex
 	$(MAKE) -C ../firmware main.hex
 
 
-usbasploader.raw:
+usbasploader.raw: ../firmware/main.bin
 	$(OBC) -j .text -j .data -O binary ../firmware/main.bin usbasploader.raw
 
 usbasploader.o: usbasploader.raw
@@ -57,6 +57,7 @@ updater.elf: updater.o usbasploader.o
 updater.hex: updater.elf
 	$(OBC) -j .text -j .data -O ihex updater.elf updater.hex
 	$(ECHO) "."
+	$(ECHO) "."
 	$(SIZ) updater.elf
 	$(ECHO) "."
 	$(AVRDUDE) -D -U flash:w:updater.hex:i
@@ -67,8 +68,9 @@ deepclean: clean
 	$(RM) *~
 
 clean:
-	$(RM) *.o
-	$(RM) *.raw
+	$(RM) usbasploader.o
+	$(RM) updater.o
+	$(RM) usbasploader.raw
 	$(RM) updater.hex
 	$(RM) updater.elf
 	$(RM) usbasploader.raw

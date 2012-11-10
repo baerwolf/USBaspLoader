@@ -70,7 +70,7 @@ clean:
 	$(RM) usbdrv/usbdrv.s
 
 # file targets:
-main.bin:	$(OBJECTS)
+main.bin:	$(OBJECTS) bootloaderconfig.h
 	$(CC) $(CFLAGS) -o main.bin $(OBJECTS) $(LDFLAGS)
 
 main.hex:	main.bin

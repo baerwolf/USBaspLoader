@@ -20,7 +20,10 @@
 #include <util/delay.h>
 #include <string.h>
 
-
+#include "../firmware/bootloaderconfig.h"
+#if !HAVE_SPMINTEREFACE
+  #error "bootloader does not support updating itself! (HAVE_SPMINTEREFACE)"
+#endif
 
 // helpful definitions and makros ////
 
