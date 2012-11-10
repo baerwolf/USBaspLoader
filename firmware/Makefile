@@ -60,7 +60,14 @@ deepclean: clean
 	$(RM) *~
 
 clean:
-	$(RM) main.hex main.bin *.o usbdrv/*.o main.s usbdrv/oddebug.s usbdrv/usbdrv.s
+	$(RM) main.hex
+	$(RM) main.bin
+	$(RM) main.o
+	$(RM) main.s
+	$(RM) usbdrv/usbdrvasm.o
+	$(RM) usbdrv/oddebug.o
+	$(RM) usbdrv/oddebug.s
+	$(RM) usbdrv/usbdrv.s
 
 # file targets:
 main.bin:	$(OBJECTS)
@@ -69,7 +76,16 @@ main.bin:	$(OBJECTS)
 main.hex:	main.bin
 	$(RM) main.hex main.eep.hex
 	$(OBC) -j .text -j .data -O ihex main.bin main.hex
-	$(SIZ) main.bin
+	$(ECHO) "."
+	$(ECHO) "."
+	$(ECHO) "."
+	$(ECHO) "!!!ATTANTION!!!"
+	$(ECHO) "(data+text) MUST fit into your MCUs bootloader section"
+	$(ECHO) "."
+	$(SIZ) --mcu $(DEVICE) main.bin
+	$(ECHO) "."
+	$(ECHO) "."
+	$(ECHO) "."
 
 disasm:	main.bin
 	$(OBD) -d main.bin
