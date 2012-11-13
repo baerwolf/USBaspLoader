@@ -44,7 +44,7 @@ usbasploader.raw: ../firmware/main.bin
 	$(OBC) -j .text -j .data -O binary ../firmware/main.bin usbasploader.raw
 
 usbasploader.o: usbasploader.raw
-	$(OBC) -I binary -O elf32-avr --rename-section .data=.text --redefine-sym _binary_usbasploader_raw_start=usbasploader  usbasploader.raw usbasploader.o
+	$(OBC) -B $(MCUARCH) -I binary -O elf32-avr --rename-section .data=.text --redefine-sym _binary_usbasploader_raw_start=usbasploader  usbasploader.raw usbasploader.o
 
 
 updater.o: updater.c usbasploader.h usbasploader.raw usbasploader.o
