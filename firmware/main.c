@@ -386,14 +386,10 @@ uchar   i;
 
 static void initForUsbConnectivity(void)
 {
-uchar   i = 0;
-
     usbInit();
     /* enforce USB re-enumerate: */
     usbDeviceDisconnect();  /* do this while interrupts are disabled */
-    while(--i){         /* fake USB disconnect for > 250 ms */
-        _delay_ms(1);
-    }
+    _delay_ms(260);         /* fake USB disconnect for > 250 ms */
     usbDeviceConnect();
     sei();
 }
