@@ -179,6 +179,17 @@ these macros are defined, the boot loader usees them.
  * If the used MCU is fused not to enable watchdog after reset (WDTON is 1 - safty level 1)
  * then "NEED_WATCHDOG" may be deactivated in order to save some memory.
  */
+#ifndef CONFIG_NO__PRECISESLEEP
+  #define HAVE_UNPRECISEWAIT	0
+#else
+  #define HAVE_UNPRECISEWAIT	1
+#endif
+/* This macro enables hand-optimized assembler code
+ * instead to use _sleep_ms for delaying USB enumeration.
+ * Because normally these timings do not need to be exact,
+ * the optimized assembler code does not need to be precise.
+ * Therefore it is very small, which saves some PROGMEM bytes!
+ */
 //#define SIGNATURE_BYTES             0x1e, 0x93, 0x07, 0     /* ATMega8 */
 /* This macro defines the signature bytes returned by the emulated USBasp to
  * the programmer software. They should match the actual device at least in
