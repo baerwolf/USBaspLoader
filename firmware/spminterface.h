@@ -164,17 +164,17 @@ ret
     "mov r0, %A[data]\n\t"									\
 												\
     /* finally call the bootloader-function */							\
-    "icall\n\r"											\
+    "icall\n\t"											\
 												\
     "pop  r1\n\t"  										\
     "pop  r0\n\t"  										\
 												\
     :												\
     : [flashaddress] "r" (flash_wordaddress),							\
-      [spmfunctionaddress] "z" (___bootloader__do_spm__ptr),					\
+      [spmfunctionaddress] "z" ((uint16_t)(___bootloader__do_spm__ptr)),			\
       [spmcrval] "r" (spmcrval),								\
       [data] "r" (dataword)									\
-    : "r0","r1","r11","r12","r13","r18"								\
+    : "r0","r1","r11","r12","r13","r18"							\
     );												\
 })
 
