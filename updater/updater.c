@@ -2,12 +2,18 @@
   #define F_CPU 1000000UL /* 1 Mhz-Takt; hier richtigen Wert eintragen */
 #endif
 
-// 1) Test the "changed"     - feature by debugging a LED-PIN to high (PB0?)
-// 2) Test the "needs_erase" - feature by debugging a LED-PIN to high (PB1?)
-// #define mypgmdebug 1
-
 #include "../firmware/spminterface.h"
 #include "usbasploader.h"
+
+// activate updaters full set of features
+#ifndef CONFIG_UPDATER_REDUCEWRITES
+  #define CONFIG_UPDATER_REDUCEWRITES
+#endif
+
+#ifndef CONFIG_UPDATER_CLEANMEMCLEAR
+  #define CONFIG_UPDATER_CLEANMEMCLEAR
+#endif
+
 
 #include <avr/io.h>
 #include <avr/interrupt.h>
@@ -146,6 +152,7 @@ size_t mypgm_readpage(const mypgm_addr_t byteaddress,const void* buffer, const s
 }
 #endif
 
+#ifdef CONFIG_UPDATER_REDUCEWRITES
 size_t mypgm_WRITEpage(const mypgm_addr_t byteaddress,const void* buffer, const size_t bufferbytesize, mypgm_spminterface spmfunc) {
   size_t	result		= (bufferbytesize < SPM_PAGESIZE)?bufferbytesize:SPM_PAGESIZE;
   size_t	pagesize	= result >> 1;
@@ -181,23 +188,11 @@ size_t mypgm_WRITEpage(const mypgm_addr_t byteaddress,const void* buffer, const 
   }
 
   if (changed) {
-#ifdef mypgmdebug
-    DDRB  |= (1<<PB0);
-    PORTB |= (1<<PB0);
-#endif
     
     if (needs_erase) {
       //do a page-erase, ATTANTION: flash only can be erased a limited number of times !
       spmfunc(pageaddr_bakup, 0x3, 0);
-#ifndef mypgmdebug
     }
-#else 
-    } else {
-      DDRB  |= (1<<PB1);
-      PORTB |= (1<<PB1);
-    }
-#endif
-
     
     // from now on, the page is assumed empty !! (hopefully our code is located somewhere else!)
     // now, fill the tempoary buffer
@@ -218,6 +213,34 @@ size_t mypgm_WRITEpage(const mypgm_addr_t byteaddress,const void* buffer, const 
   
   return result;
 }
+#else
+size_t mypgm_WRITEpage(const mypgm_addr_t byteaddress,const void* buffer, const size_t bufferbytesize, mypgm_spminterface spmfunc) {
+  size_t	result		= (bufferbytesize < SPM_PAGESIZE)?bufferbytesize:SPM_PAGESIZE;
+  size_t	pagesize	= result >> 1;
+  uint16_t	*pagedata	= (void*)buffer;
+  mypgm_addr_t	pageaddr_bakup	= byteaddress - (byteaddress % SPM_PAGESIZE);
+  mypgm_addr_t	pageaddr	= pageaddr_bakup;
+
+  size_t	i;
+    
+  //do a page-erase, ATTANTION: flash only can be erased a limited number of times !
+  spmfunc(pageaddr_bakup, 0x3, 0);
+    
+  // from now on, the page is assumed empty !! (hopefully our code is located somewhere else!)
+  // now, fill the tempoary buffer
+  // ATTANTION: see comment on "do_spm" !
+  pageaddr	= pageaddr_bakup;
+  for (i=0;i<pagesize;i+=1) {
+    spmfunc(pageaddr, 0x1, pagedata[i]);
+    pageaddr+=2;
+  }
+    
+  // so, now finally write the page to the FLASH
+  spmfunc(pageaddr_bakup, 0x5, 0);
+  
+  return result;
+}
+#endif
 
 // #pragma GCC diagnostic ignored "-Wno-pointer-to-int-cast"
 int main(void)
@@ -227,15 +250,6 @@ int main(void)
     
     wdt_disable();
     cli();
-
-#ifdef mypgmdebug
-    DDRD  |= (1<<PD3);
-    DDRD  |= (1<<PD5);
-    PORTD |= (1<<PD3);
-    PORTD |= (1<<PD5);
-#endif
-
-
 
     // check if firmware would change...
     buffer[0]=0;
@@ -259,62 +273,36 @@ int main(void)
       // copy the current "bootloader__do_spm" to tempoary position via std. "bootloader__do_spm"
       for (i=0;i<TEMP_SPM_BLKSIZE;i+=SPM_PAGESIZE) {
 	mypgm_WRITEpage(TEMP_SPM_PAGEADR+i, buffer, mypgm_readpage(funcaddr___bootloader__do_spm+i, buffer, sizeof(buffer)), do_spm);
-  #ifdef mypgmdebug
-	PORTD ^= (1<<PD3);
-	_delay_ms(500);
-	PORTD ^= (1<<PD3);
-	_delay_ms(500);
-  #endif
       }
 
       // B
       // start updating the firmware to "NEW_BOOTLOADER_ADDRESS" until at least "TEMP_SPM_BLKSIZE"-bytes after "NEW_SPM_ADDRESS" were written
       // therefore use the tempoary "bootloader__do_spm" (since we most probably will overwrite the default do_spm)
       for (i=0;;i+=SPM_PAGESIZE) {
+#ifdef CONFIG_UPDATER_CLEANMEMCLEAR
 	memset((void*)buffer, 0xff, sizeof(buffer));
+#endif
 	memcpy_PF((void*)buffer, (uint_farptr_t)((void*)&new_firmware[i]), ((SIZEOF_new_firmware-i)>sizeof(buffer))?sizeof(buffer):(SIZEOF_new_firmware-i));
 	
 	mypgm_WRITEpage(NEW_BOOTLOADER_ADDRESS+i, buffer, sizeof(buffer), temp_do_spm);
 	
-  #ifdef mypgmdebug
-	PORTD ^= (1<<PD3);
-	_delay_ms(500);
-	PORTD ^= (1<<PD3);
-	_delay_ms(500);
-  #endif
-
 	if ((NEW_BOOTLOADER_ADDRESS+i) > (NEW_SPM_ADDRESS+TEMP_SPM_BLKSIZE)) break;
       }
 
       // C
       // continue writeing the new_firmware after "NEW_SPM_ADDRESS+TEMP_SPM_BLKSIZE" this time use the "new_do_spm"
       for (;i<SIZEOF_new_firmware;i+=SPM_PAGESIZE) {
+#ifdef CONFIG_UPDATER_CLEANMEMCLEAR
 	memset((void*)buffer, 0xff, sizeof(buffer));
+#endif
 	memcpy_PF((void*)buffer, (uint_farptr_t)((void*)&new_firmware[i]), ((SIZEOF_new_firmware-i)>sizeof(buffer))?sizeof(buffer):(SIZEOF_new_firmware-i));
 
 	mypgm_WRITEpage(NEW_BOOTLOADER_ADDRESS+i, buffer, sizeof(buffer), new_do_spm);
 	
-  #ifdef mypgmdebug
-	PORTD ^= (1<<PD3);
-	_delay_ms(500);
-	PORTD ^= (1<<PD3);
-	_delay_ms(500);
-  #endif
       }
 
 
 
-    }
-
-#ifdef mypgmdebug
-    PORTD |= (1<<PD3);
-#endif
-    while(1)
-    {
-#ifdef mypgmdebug
-      PORTD ^= (1<<PD5);
-      _delay_ms(100);
-#endif
     }
 
 }
