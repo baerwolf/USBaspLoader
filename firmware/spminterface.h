@@ -37,6 +37,9 @@ bootloader__do_spm:
 ;you may also want to disable wdt, since this routine may busy-loop
 ;==================================================================
 ;-->INPUT:
+;#if HAVE_SPMINTEREFACE_MAGICVALUE
+;magicvalue in                                    r23:r22:r21:r20
+;#endif
 ;spmcr (spmcrval determines SPM action) will be register:	r18
 ;MCU dependend RA(MPZ should be transfered within register:	r11
 ;lo8(Z) should be transfered within register:			r12
@@ -55,7 +58,7 @@ bootloader__do_spm:
 ;==================================================================
 ; TODO: waitA and waitB could be merged to subroutine saving 2 opc
 ;==================================================================
-
+;<magicvalue specific code (not depicted here)>
 ;load pageaddress (Z) from (r11:)r13:12 since it may was used for icall
 mov	rampZ,	r11
 mov	r30,	r12
@@ -86,6 +89,7 @@ ret
 */ 
 
 #include <avr/io.h>
+#include "bootloaderconfig.h"
 
 
 
@@ -146,7 +150,13 @@ ret
  * REMEMBER: interrupts have to be disabled! (otherwise code may crash non-deterministic)
  * 
  */
-#define __do_spm_Ex(flash_wordaddress, spmcrval, dataword, ___bootloader__do_spm__ptr)		\
+#if HAVE_SPMINTEREFACE_MAGICVALUE
+#define __do_spm_Ex	__do_spm_Ex_magic
+#else
+#define __do_spm_Ex	__do_spm_Ex_
+#endif
+  
+#define __do_spm_Ex_(flash_wordaddress, spmcrval, dataword, ___bootloader__do_spm__ptr)	\
 ({												\
     asm volatile (										\
     "push r0\n\t"  										\
@@ -166,6 +176,17 @@ ret
     /* finally call the bootloader-function */							\
     "icall\n\t"											\
 												\
+    /*												\
+     * bootloader__do_spm should change spmcrval (r18) to					\
+     * "((1<<RWWSRE) | (1<<SPMEN))" in case of success						\
+     */												\
+    "cpi r18, %[spmret]\n\t"									\
+     /* loop infitinte if not so, most likely we called an bootloader__do_spm			\
+      * with wrong magic! To avoid calls to wrong initialized pages, better crash here...    \
+      */											\
+"loop%=: \n\t"											\
+    "brne loop%= \n\t"										\
+												\
     "pop  r1\n\t"  										\
     "pop  r0\n\t"  										\
 												\
@@ -173,8 +194,62 @@ ret
     : [flashaddress] "r" (flash_wordaddress),							\
       [spmfunctionaddress] "z" ((uint16_t)(___bootloader__do_spm__ptr)),			\
       [spmcrval] "r" (spmcrval),								\
-      [data] "r" (dataword)									\
+      [data] "r" (dataword),									\
+      [spmret] "M" ((1<<RWWSRE) | (1<<SPMEN))							\
     : "r0","r1","r11","r12","r13","r18"							\
+    );												\
+})
+
+#define __do_spm_Ex_magic(flash_wordaddress, spmcrval, dataword, ___bootloader__do_spm__ptr)	\
+({												\
+    asm volatile (										\
+    "push r0\n\t"  										\
+    "push r1\n\t"  										\
+												\
+    "ldi r23, %[magicD] \n\t"									\
+    "ldi r22, %[magicC] \n\t"									\
+    "ldi r21, %[magicB] \n\t"									\
+    "ldi r20, %[magicA] \n\t"									\
+												\
+    "mov r13, %B[flashaddress]\n\t"								\
+    "mov r12, %A[flashaddress]\n\t"								\
+    "mov r11, %C[flashaddress]\n\t"								\
+												\
+    /* also load the spmcrval */								\
+    "mov r18, %[spmcrval]\n\t"									\
+												\
+												\
+    "mov r1, %B[data]\n\t"									\
+    "mov r0, %A[data]\n\t"									\
+												\
+    /* finally call the bootloader-function */							\
+    "icall\n\t"											\
+												\
+    /*												\
+     * bootloader__do_spm should change spmcrval (r18) to					\
+     * "((1<<RWWSRE) | (1<<SPMEN))" in case of success						\
+     */												\
+    "cpi r18, %[spmret]\n\t"									\
+     /* loop infitinte if not so, most likely we called an bootloader__do_spm			\
+      * with wrong magic! To avoid calls to wrong initialized pages, better crash here...    \
+      */											\
+"loop%=: \n\t"											\
+    "brne loop%= \n\t"										\
+												\
+    "pop  r1\n\t"  										\
+    "pop  r0\n\t"  										\
+												\
+    :												\
+    : [flashaddress] "r" (flash_wordaddress),							\
+      [spmfunctionaddress] "z" ((uint16_t)(___bootloader__do_spm__ptr)),			\
+      [spmcrval] "r" (spmcrval),								\
+      [data] "r" (dataword),									\
+      [spmret] "M" ((1<<RWWSRE) | (1<<SPMEN)),							\
+      [magicD] "M" ((HAVE_SPMINTEREFACE_MAGICVALUE>>24)&0xff),				\
+      [magicC] "M" ((HAVE_SPMINTEREFACE_MAGICVALUE>>16)&0xff),				\
+      [magicB] "M" ((HAVE_SPMINTEREFACE_MAGICVALUE>> 8)&0xff),				\
+      [magicA] "M" ((HAVE_SPMINTEREFACE_MAGICVALUE>> 0)&0xff)					\
+    : "r0","r1","r11","r12","r13","r18","r20","r21","r22","r23"				\
     );												\
 })
 
@@ -185,8 +260,6 @@ void do_spm(const uint32_t flash_byteaddress, const uint8_t spmcrval, const uint
 }
 #endif
 
-
-#include "bootloaderconfig.h"
 
 #if (HAVE_SPMINTEREFACE) && (defined(BOOTLOADER_ADDRESS)) && (!(defined(NEW_BOOTLOADER_ADDRESS)))
 
@@ -211,11 +284,25 @@ void do_spm(const uint32_t flash_byteaddress, const uint8_t spmcrval, const uint
 #endif
 
 //assume  SPMCR==0x37, SPMEN==0x0, RWWSRE=0x4, RWWSB=0x6
-const uint16_t bootloader__do_spm[16] BOOTLIBLINK = {0x0000, 0x2dec, 0x2dfd, 0xb6b7, 0xfcb0, 0xcffd, 0xbf27, 0x95e8, 0xb6b7,
-						      0xfcb0, 0xcffd, 0xe121, 0xb6b7, 0xfcb6, 0xcff4, 0x9508};
+#if HAVE_SPMINTEREFACE_MAGICVALUE
+const uint16_t bootloader__do_spm[23] BOOTLIBLINK = {
+  (((0x30 | ((HAVE_SPMINTEREFACE_MAGICVALUE >> 28) & 0xf))<<8) | (0x70 | ((HAVE_SPMINTEREFACE_MAGICVALUE >> 24) & 0xf))), // r23
+  0xf4a1, // brne +20
+  (((0x30 | ((HAVE_SPMINTEREFACE_MAGICVALUE >> 20) & 0xf))<<8) | (0x60 | ((HAVE_SPMINTEREFACE_MAGICVALUE >> 16) & 0xf))), // r22
+  0xf491, // brne +18
+  (((0x30 | ((HAVE_SPMINTEREFACE_MAGICVALUE >> 12) & 0xf))<<8) | (0x50 | ((HAVE_SPMINTEREFACE_MAGICVALUE >>  8) & 0xf))), // r21
+  0xf481, // brne +16
+  (((0x30 | ((HAVE_SPMINTEREFACE_MAGICVALUE >>  4) & 0xf))<<8) | (0x40 | ((HAVE_SPMINTEREFACE_MAGICVALUE >>  0) & 0xf))), // r20
+  0xf471, // brne +14
+#else
+const uint16_t bootloader__do_spm[15] BOOTLIBLINK = {
+#endif
+  0x2dec, 0x2dfd, 0xb6b7, 0xfcb0, 0xcffd, 0xbf27, 0x95e8, 0xb6b7,
+  0xfcb0, 0xcffd, 0xe121, 0xb6b7, 0xfcb6, 0xcff4, 0x9508
+};
+
 /*
 00001826 <bootloader__do_spm>:
-    1826:	00 00       	nop
     1828:	ec 2d       	mov	r30, r12
     182a:	fd 2d       	mov	r31, r13
 
@@ -242,9 +329,6 @@ const uint16_t bootloader__do_spm[16] BOOTLIBLINK = {0x0000, 0x2dec, 0x2dfd, 0xb
 
 
 #elif defined (__AVR_ATmega48__) || defined (__AVR_ATmega48P__) || defined (__AVR_ATmega88__) || defined (__AVR_ATmega88P__) || defined (__AVR_ATmega168__) || defined (__AVR_ATmega168P__)
-//assume  SPMCR:=SPMCSR==0x37, SPMEN:=SELFPRGEN==0x0, RWWSRE=0x4, RWWSB=0x6
-const uint16_t bootloader__do_spm[15] BOOTLIBLINK = {       0x2dec, 0x2dfd, 0xb6b7, 0xfcb0, 0xcffd, 0xbf27, 0x95e8, 0xb6b7,
-						      0xfcb0, 0xcffd, 0xe121, 0xb6b7, 0xfcb6, 0xcff4, 0x9508};
 
 #if defined (__AVR_ATmega88__) || defined (__AVR_ATmega88P__)
   #if (BOOTLOADER_ADDRESS != 0x1800)
@@ -258,9 +342,25 @@ const uint16_t bootloader__do_spm[15] BOOTLIBLINK = {       0x2dec, 0x2dfd, 0xb6
   #error undefined device selection - this should not happen! 
 #endif
 
+//assume  SPMCR:=SPMCSR==0x37, SPMEN:=SELFPRGEN==0x0, RWWSRE=0x4, RWWSB=0x6
+#if HAVE_SPMINTEREFACE_MAGICVALUE
+const uint16_t bootloader__do_spm[23] BOOTLIBLINK = {
+  (((0x30 | ((HAVE_SPMINTEREFACE_MAGICVALUE >> 28) & 0xf))<<8) | (0x70 | ((HAVE_SPMINTEREFACE_MAGICVALUE >> 24) & 0xf))), // r23
+  0xf4a1, // brne +20
+  (((0x30 | ((HAVE_SPMINTEREFACE_MAGICVALUE >> 20) & 0xf))<<8) | (0x60 | ((HAVE_SPMINTEREFACE_MAGICVALUE >> 16) & 0xf))), // r22
+  0xf491, // brne +18
+  (((0x30 | ((HAVE_SPMINTEREFACE_MAGICVALUE >> 12) & 0xf))<<8) | (0x50 | ((HAVE_SPMINTEREFACE_MAGICVALUE >>  8) & 0xf))), // r21
+  0xf481, // brne +16
+  (((0x30 | ((HAVE_SPMINTEREFACE_MAGICVALUE >>  4) & 0xf))<<8) | (0x40 | ((HAVE_SPMINTEREFACE_MAGICVALUE >>  0) & 0xf))), // r20
+  0xf471, // brne +14
+#else
+const uint16_t bootloader__do_spm[15] BOOTLIBLINK = {
+#endif
+  0x2dec, 0x2dfd, 0xb6b7, 0xfcb0, 0xcffd, 0xbf27, 0x95e8, 0xb6b7,
+  0xfcb0, 0xcffd, 0xe121, 0xb6b7, 0xfcb6, 0xcff4, 0x9508
+};
 /*
 00001826 <bootloader__do_spm>:
-    1826:	00 00       	nop
     1828:	ec 2d       	mov	r30, r12
     182a:	fd 2d       	mov	r31, r13
 
@@ -305,11 +405,24 @@ const uint16_t bootloader__do_spm[15] BOOTLIBLINK = {       0x2dec, 0x2dfd, 0xb6
 #endif
 
 //assume  SPMCR:=SPMCSR==0x37, SPMEN:=SELFPRGEN==0x0, RWWSRE=0x4, RWWSB=0x6
-const uint16_t bootloader__do_spm[15] BOOTLIBLINK = {       0x2dec, 0x2dfd, 0xb6b7, 0xfcb0, 0xcffd, 0xbf27, 0x95e8, 0xb6b7,
-						      0xfcb0, 0xcffd, 0xe121, 0xb6b7, 0xfcb6, 0xcff4, 0x9508};
+#if HAVE_SPMINTEREFACE_MAGICVALUE
+const uint16_t bootloader__do_spm[23] BOOTLIBLINK = {
+  (((0x30 | ((HAVE_SPMINTEREFACE_MAGICVALUE >> 28) & 0xf))<<8) | (0x70 | ((HAVE_SPMINTEREFACE_MAGICVALUE >> 24) & 0xf))), // r23
+  0xf4a1, // brne +20
+  (((0x30 | ((HAVE_SPMINTEREFACE_MAGICVALUE >> 20) & 0xf))<<8) | (0x60 | ((HAVE_SPMINTEREFACE_MAGICVALUE >> 16) & 0xf))), // r22
+  0xf491, // brne +18
+  (((0x30 | ((HAVE_SPMINTEREFACE_MAGICVALUE >> 12) & 0xf))<<8) | (0x50 | ((HAVE_SPMINTEREFACE_MAGICVALUE >>  8) & 0xf))), // r21
+  0xf481, // brne +16
+  (((0x30 | ((HAVE_SPMINTEREFACE_MAGICVALUE >>  4) & 0xf))<<8) | (0x40 | ((HAVE_SPMINTEREFACE_MAGICVALUE >>  0) & 0xf))), // r20
+  0xf471, // brne +14
+#else
+const uint16_t bootloader__do_spm[15] BOOTLIBLINK = {
+#endif
+  0x2dec, 0x2dfd, 0xb6b7, 0xfcb0, 0xcffd, 0xbf27, 0x95e8, 0xb6b7,
+  0xfcb0, 0xcffd, 0xe121, 0xb6b7, 0xfcb6, 0xcff4, 0x9508
+};
 /*
 00001826 <bootloader__do_spm>:
-    1826:	00 00       	nop
     1828:	ec 2d       	mov	r30, r12
     182a:	fd 2d       	mov	r31, r13
 
@@ -336,10 +449,6 @@ const uint16_t bootloader__do_spm[15] BOOTLIBLINK = {       0x2dec, 0x2dfd, 0xb6
 
 
 #elif defined (__AVR_ATmega128__)
-//assume  SPMCR:=SPMCSR==0x68, SPMEN==0x0, RWWSRE=0x4, RWWSB=0x6 and rampZ=0x3b
-const uint16_t bootloader__do_spm[20] BOOTLIBLINK = {0xbebb, 0x2dec, 0x2dfd, 0x90b0, 0x0068, 0xfcb0, 0xcffc, 0x9320, 0x0068,
-						      0x95e8, 0x90b0, 0x0068, 0xfcb0, 0xcffc, 0xe121, 0x90b0, 0x0068, 0xfcb6,
-						      0xcff0, 0x9508};
 
 #if defined (__AVR_ATmega128__)
   #if (BOOTLOADER_ADDRESS != 0x1E000)
@@ -349,6 +458,24 @@ const uint16_t bootloader__do_spm[20] BOOTLIBLINK = {0xbebb, 0x2dec, 0x2dfd, 0x9
   #error undefined device selection - this should not happen! 
 #endif
 
+//assume  SPMCR:=SPMCSR==0x68, SPMEN==0x0, RWWSRE=0x4, RWWSB=0x6 and rampZ=0x3b
+#if HAVE_SPMINTEREFACE_MAGICVALUE
+const uint16_t bootloader__do_spm[28] BOOTLIBLINK = {
+  (((0x30 | ((HAVE_SPMINTEREFACE_MAGICVALUE >> 28) & 0xf))<<8) | (0x70 | ((HAVE_SPMINTEREFACE_MAGICVALUE >> 24) & 0xf))), // r23
+  0xf4c9, // brne +21+4
+  (((0x30 | ((HAVE_SPMINTEREFACE_MAGICVALUE >> 20) & 0xf))<<8) | (0x60 | ((HAVE_SPMINTEREFACE_MAGICVALUE >> 16) & 0xf))), // r22
+  0xf4b9, // brne +19+4
+  (((0x30 | ((HAVE_SPMINTEREFACE_MAGICVALUE >> 12) & 0xf))<<8) | (0x50 | ((HAVE_SPMINTEREFACE_MAGICVALUE >>  8) & 0xf))), // r21
+  0xf4a9, // brne +17+4
+  (((0x30 | ((HAVE_SPMINTEREFACE_MAGICVALUE >>  4) & 0xf))<<8) | (0x40 | ((HAVE_SPMINTEREFACE_MAGICVALUE >>  0) & 0xf))), // r20
+  0xf499, // brne +15+4
+#else
+const uint16_t bootloader__do_spm[20] BOOTLIBLINK = {
+#endif
+  0xbebb, 0x2dec, 0x2dfd, 0x90b0, 0x0068, 0xfcb0, 0xcffc, 0x9320, 0x0068,
+  0x95e8, 0x90b0, 0x0068, 0xfcb0, 0xcffc, 0xe121, 0x90b0, 0x0068, 0xfcb6,
+  0xcff0, 0x9508
+};
 /*
 0001e08c <bootloader__do_spm>:
    1e08c:       bb be           out     0x3b, r11       ; 59
@@ -378,9 +505,6 @@ const uint16_t bootloader__do_spm[20] BOOTLIBLINK = {0xbebb, 0x2dec, 0x2dfd, 0x9
 
 
 #elif defined (__AVR_ATmega164A__) || defined (__AVR_ATmega164P__) || defined (__AVR_ATmega164PA__) || defined (__AVR_ATmega324A__) || defined (__AVR_ATmega324P__) || defined (__AVR_ATmega324PA__) || defined (__AVR_ATmega644__) || defined (__AVR_ATmega644A__) || defined (__AVR_ATmega644P__) || defined (__AVR_ATmega644PA__) || defined (__AVR_ATmega1284__) || defined (__AVR_ATmega1284P__)
-//assume  SPMCR:=SPCSR==0x37, SPMEN==0x0, RWWSRE=0x4, RWWSB=0x6 and rampZ=0x3b
-const uint16_t bootloader__do_spm[16] BOOTLIBLINK = {0xbebb, 0x2dec, 0x2dfd, 0xb6b7, 0xfcb0, 0xcffd, 0xbf27, 0x95e8, 0xb6b7,
-						      0xfcb0, 0xcffd, 0xe121, 0xb6b7, 0xfcb6, 0xcff4, 0x9508};
 
 #if defined (__AVR_ATmega164A__) || defined (__AVR_ATmega164P__) || defined (__AVR_ATmega164PA__)
   #if (BOOTLOADER_ADDRESS != 0x3800)
@@ -402,6 +526,24 @@ const uint16_t bootloader__do_spm[16] BOOTLIBLINK = {0xbebb, 0x2dec, 0x2dfd, 0xb
   #error undefined device selection - this should not happen! 
 #endif
 
+//assume  SPMCR:=SPCSR==0x37, SPMEN==0x0, RWWSRE=0x4, RWWSB=0x6 and rampZ=0x3b
+#if HAVE_SPMINTEREFACE_MAGICVALUE
+const uint16_t bootloader__do_spm[24] BOOTLIBLINK = {
+  (((0x30 | ((HAVE_SPMINTEREFACE_MAGICVALUE >> 28) & 0xf))<<8) | (0x70 | ((HAVE_SPMINTEREFACE_MAGICVALUE >> 24) & 0xf))), // r23
+  0xf4a9, // brne +21
+  (((0x30 | ((HAVE_SPMINTEREFACE_MAGICVALUE >> 20) & 0xf))<<8) | (0x60 | ((HAVE_SPMINTEREFACE_MAGICVALUE >> 16) & 0xf))), // r22
+  0xf499, // brne +19
+  (((0x30 | ((HAVE_SPMINTEREFACE_MAGICVALUE >> 12) & 0xf))<<8) | (0x50 | ((HAVE_SPMINTEREFACE_MAGICVALUE >>  8) & 0xf))), // r21
+  0xf489, // brne +17
+  (((0x30 | ((HAVE_SPMINTEREFACE_MAGICVALUE >>  4) & 0xf))<<8) | (0x40 | ((HAVE_SPMINTEREFACE_MAGICVALUE >>  0) & 0xf))), // r20
+  0xf479, // brne +15
+#else
+const uint16_t bootloader__do_spm[16] BOOTLIBLINK = {
+#endif
+  0xbebb,
+  0x2dec, 0x2dfd, 0xb6b7, 0xfcb0, 0xcffd, 0xbf27, 0x95e8, 0xb6b7,
+  0xfcb0, 0xcffd, 0xe121, 0xb6b7, 0xfcb6, 0xcff4, 0x9508
+};
 /*
 00001826 <bootloader__do_spm>:
     1826:	bb be       	out	0x3b,r11	; rampZ=r11; (rampZ is at IO 0x3b)

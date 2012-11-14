@@ -143,6 +143,41 @@ these macros are defined, the boot loader usees them.
  * feature.
  */
 
+/* all boards should use a magic to make it safe to confuse updatefiles :-)  */
+#define HAVE_SPMINTEREFACE_MAGICVALUE    0
+/* If this feature is enabled (value != 0), the configured 32bit value is 
+ * used as a magic value within spminterface. "bootloader__do_spm" will check
+ * additional four (4) registers for this value and only proceed, if they contain
+ * the right value. With this feature you can identify your board and avoid
+ * updating the wrong bootloader to the wrong board!
+ * 
+ * Not all values are possible - "SPMINTEREFACE_MAGICVALUE" must be very sparse!
+ * To avoid collisions, magic-values will be organized centrally by Stephan
+ * Following values are definitly blocked or reserved and must not be used:
+ * 	0x00000000, 0x12345678,
+ * 	0x00a500a5, 0x00a5a500, 0xa50000a5, 0xa500a500,
+ * 	0x005a005a, 0x005a5a00, 0x5a00005a, 0x5a005a00,
+ * 	0x5aa55aa5, 0x5aa5a55a, 0xa55a5aa5, 0xa55aa55a,
+ * 	0x5a5a5a5a, 0xa5a5a5a5,
+ * 	0xffa5ffa5, 0xffa5a5ff, 0xa5ffffa5, 0xa5ffa5ff,
+ * 	0xff5aff5a, 0xff5a5aff, 0x5affff5a, 0x5aff5aff,
+ * 	0x00ff00ff, 0x00ffff00, 0xff0000ff, 0xff00ff00,
+ * 	0xffffffff
+ * 
+ * To request your own magic, please send at least following information
+ * about yourself and your board together within an informal request to:
+ * stephan@matrixstorm.com / matrixstorm@gmx.de / stephan.baerwolf@tu-ilmenau.de
+ * 	  - your name
+ * 	  - your e-mail
+ * 	  - your project (maybe an url?)
+ * 	  - your type of MCU used
+ * 	--> your used "BOOTLOADER_ADDRESS" (since same magics can be reused for different "BOOTLOADER_ADDRESS")
+ * 
+ * There may be no garanty for it, but Stephan will then send you an
+ * response with a "SPMINTEREFACE_MAGICVALUE" just for your board/project...
+ * WITH REQUESTING A MAGIC YOU AGREE TO PUBLISHED YOUR DATA SEND WITHIN THE REQUEST 
+ */
+
 #define HAVE_EEPROM_PAGED_ACCESS    1
 /* If HAVE_EEPROM_PAGED_ACCESS is defined to 1, page mode access to EEPROM is
  * compiled in. Whether page mode or byte mode access is used by AVRDUDE
@@ -156,6 +191,7 @@ these macros are defined, the boot loader usees them.
  * signature) does not support page mode for EEPROM. It is required for
  * accessing the EEPROM on the ATMega8. Costs ~54 bytes.
  */
+
 #ifndef CONFIG_NO__BOOTLOADER_CAN_EXIT
   #define BOOTLOADER_CAN_EXIT         1
 #else
@@ -164,10 +200,12 @@ these macros are defined, the boot loader usees them.
 /* If this macro is defined to 1, the boot loader will exit shortly after the
  * programmer closes the connection to the device. Costs extra bytes.
  */
+
 #define HAVE_CHIP_ERASE             0
 /* If this macro is defined to 1, the boot loader implements the Chip Erase
  * ISP command. Otherwise pages are erased on demand before they are written.
  */
+
 #ifndef CONFIG_NO__NEED_WATCHDOG
   #define NEED_WATCHDOG		1
 #else
@@ -179,6 +217,7 @@ these macros are defined, the boot loader usees them.
  * If the used MCU is fused not to enable watchdog after reset (WDTON is 1 - safty level 1)
  * then "NEED_WATCHDOG" may be deactivated in order to save some memory.
  */
+
 #ifndef CONFIG_NO__PRECISESLEEP
   #define HAVE_UNPRECISEWAIT	0
 #else
@@ -190,6 +229,7 @@ these macros are defined, the boot loader usees them.
  * the optimized assembler code does not need to be precise.
  * Therefore it is very small, which saves some PROGMEM bytes!
  */
+
 //#define SIGNATURE_BYTES             0x1e, 0x93, 0x07, 0     /* ATMega8 */
 /* This macro defines the signature bytes returned by the emulated USBasp to
  * the programmer software. They should match the actual device at least in
