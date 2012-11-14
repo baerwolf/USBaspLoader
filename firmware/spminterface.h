@@ -260,6 +260,11 @@ void do_spm(const uint32_t flash_byteaddress, const uint8_t spmcrval, const uint
 }
 #endif
 
+#if HAVE_SPMINTEREFACE_NORETMAGIC
+  #define bootloader__do_spm_magic_exitstrategy(a) (0xf7f9)
+#else
+  #define bootloader__do_spm_magic_exitstrategy(a) (a)
+#endif
 
 #if (HAVE_SPMINTEREFACE) && (defined(BOOTLOADER_ADDRESS)) && (!(defined(NEW_BOOTLOADER_ADDRESS)))
 
@@ -287,13 +292,13 @@ void do_spm(const uint32_t flash_byteaddress, const uint8_t spmcrval, const uint
 #if HAVE_SPMINTEREFACE_MAGICVALUE
 const uint16_t bootloader__do_spm[23] BOOTLIBLINK = {
   (((0x30 | ((HAVE_SPMINTEREFACE_MAGICVALUE >> 28) & 0xf))<<8) | (0x70 | ((HAVE_SPMINTEREFACE_MAGICVALUE >> 24) & 0xf))), // r23
-  0xf4a1, // brne +20
+  bootloader__do_spm_magic_exitstrategy(0xf4a1), // brne +20
   (((0x30 | ((HAVE_SPMINTEREFACE_MAGICVALUE >> 20) & 0xf))<<8) | (0x60 | ((HAVE_SPMINTEREFACE_MAGICVALUE >> 16) & 0xf))), // r22
-  0xf491, // brne +18
+  bootloader__do_spm_magic_exitstrategy(0xf491), // brne +18
   (((0x30 | ((HAVE_SPMINTEREFACE_MAGICVALUE >> 12) & 0xf))<<8) | (0x50 | ((HAVE_SPMINTEREFACE_MAGICVALUE >>  8) & 0xf))), // r21
-  0xf481, // brne +16
+  bootloader__do_spm_magic_exitstrategy(0xf481), // brne +16
   (((0x30 | ((HAVE_SPMINTEREFACE_MAGICVALUE >>  4) & 0xf))<<8) | (0x40 | ((HAVE_SPMINTEREFACE_MAGICVALUE >>  0) & 0xf))), // r20
-  0xf471, // brne +14
+  bootloader__do_spm_magic_exitstrategy(0xf471), // brne +14
 #else
 const uint16_t bootloader__do_spm[15] BOOTLIBLINK = {
 #endif
@@ -346,13 +351,13 @@ const uint16_t bootloader__do_spm[15] BOOTLIBLINK = {
 #if HAVE_SPMINTEREFACE_MAGICVALUE
 const uint16_t bootloader__do_spm[23] BOOTLIBLINK = {
   (((0x30 | ((HAVE_SPMINTEREFACE_MAGICVALUE >> 28) & 0xf))<<8) | (0x70 | ((HAVE_SPMINTEREFACE_MAGICVALUE >> 24) & 0xf))), // r23
-  0xf4a1, // brne +20
+  bootloader__do_spm_magic_exitstrategy(0xf4a1), // brne +20
   (((0x30 | ((HAVE_SPMINTEREFACE_MAGICVALUE >> 20) & 0xf))<<8) | (0x60 | ((HAVE_SPMINTEREFACE_MAGICVALUE >> 16) & 0xf))), // r22
-  0xf491, // brne +18
+  bootloader__do_spm_magic_exitstrategy(0xf491), // brne +18
   (((0x30 | ((HAVE_SPMINTEREFACE_MAGICVALUE >> 12) & 0xf))<<8) | (0x50 | ((HAVE_SPMINTEREFACE_MAGICVALUE >>  8) & 0xf))), // r21
-  0xf481, // brne +16
+  bootloader__do_spm_magic_exitstrategy(0xf481), // brne +16
   (((0x30 | ((HAVE_SPMINTEREFACE_MAGICVALUE >>  4) & 0xf))<<8) | (0x40 | ((HAVE_SPMINTEREFACE_MAGICVALUE >>  0) & 0xf))), // r20
-  0xf471, // brne +14
+  bootloader__do_spm_magic_exitstrategy(0xf471), // brne +14
 #else
 const uint16_t bootloader__do_spm[15] BOOTLIBLINK = {
 #endif
@@ -408,13 +413,13 @@ const uint16_t bootloader__do_spm[15] BOOTLIBLINK = {
 #if HAVE_SPMINTEREFACE_MAGICVALUE
 const uint16_t bootloader__do_spm[23] BOOTLIBLINK = {
   (((0x30 | ((HAVE_SPMINTEREFACE_MAGICVALUE >> 28) & 0xf))<<8) | (0x70 | ((HAVE_SPMINTEREFACE_MAGICVALUE >> 24) & 0xf))), // r23
-  0xf4a1, // brne +20
+  bootloader__do_spm_magic_exitstrategy(0xf4a1), // brne +20
   (((0x30 | ((HAVE_SPMINTEREFACE_MAGICVALUE >> 20) & 0xf))<<8) | (0x60 | ((HAVE_SPMINTEREFACE_MAGICVALUE >> 16) & 0xf))), // r22
-  0xf491, // brne +18
+  bootloader__do_spm_magic_exitstrategy(0xf491), // brne +18
   (((0x30 | ((HAVE_SPMINTEREFACE_MAGICVALUE >> 12) & 0xf))<<8) | (0x50 | ((HAVE_SPMINTEREFACE_MAGICVALUE >>  8) & 0xf))), // r21
-  0xf481, // brne +16
+  bootloader__do_spm_magic_exitstrategy(0xf481), // brne +16
   (((0x30 | ((HAVE_SPMINTEREFACE_MAGICVALUE >>  4) & 0xf))<<8) | (0x40 | ((HAVE_SPMINTEREFACE_MAGICVALUE >>  0) & 0xf))), // r20
-  0xf471, // brne +14
+  bootloader__do_spm_magic_exitstrategy(0xf471), // brne +14
 #else
 const uint16_t bootloader__do_spm[15] BOOTLIBLINK = {
 #endif
@@ -462,13 +467,13 @@ const uint16_t bootloader__do_spm[15] BOOTLIBLINK = {
 #if HAVE_SPMINTEREFACE_MAGICVALUE
 const uint16_t bootloader__do_spm[28] BOOTLIBLINK = {
   (((0x30 | ((HAVE_SPMINTEREFACE_MAGICVALUE >> 28) & 0xf))<<8) | (0x70 | ((HAVE_SPMINTEREFACE_MAGICVALUE >> 24) & 0xf))), // r23
-  0xf4c9, // brne +21+4
+  bootloader__do_spm_magic_exitstrategy(0xf4c9), // brne +21+4
   (((0x30 | ((HAVE_SPMINTEREFACE_MAGICVALUE >> 20) & 0xf))<<8) | (0x60 | ((HAVE_SPMINTEREFACE_MAGICVALUE >> 16) & 0xf))), // r22
-  0xf4b9, // brne +19+4
+  bootloader__do_spm_magic_exitstrategy(0xf4b9), // brne +19+4
   (((0x30 | ((HAVE_SPMINTEREFACE_MAGICVALUE >> 12) & 0xf))<<8) | (0x50 | ((HAVE_SPMINTEREFACE_MAGICVALUE >>  8) & 0xf))), // r21
-  0xf4a9, // brne +17+4
+  bootloader__do_spm_magic_exitstrategy(0xf4a9), // brne +17+4
   (((0x30 | ((HAVE_SPMINTEREFACE_MAGICVALUE >>  4) & 0xf))<<8) | (0x40 | ((HAVE_SPMINTEREFACE_MAGICVALUE >>  0) & 0xf))), // r20
-  0xf499, // brne +15+4
+  bootloader__do_spm_magic_exitstrategy(0xf499), // brne +15+4
 #else
 const uint16_t bootloader__do_spm[20] BOOTLIBLINK = {
 #endif
@@ -530,13 +535,13 @@ const uint16_t bootloader__do_spm[20] BOOTLIBLINK = {
 #if HAVE_SPMINTEREFACE_MAGICVALUE
 const uint16_t bootloader__do_spm[24] BOOTLIBLINK = {
   (((0x30 | ((HAVE_SPMINTEREFACE_MAGICVALUE >> 28) & 0xf))<<8) | (0x70 | ((HAVE_SPMINTEREFACE_MAGICVALUE >> 24) & 0xf))), // r23
-  0xf4a9, // brne +21
+  bootloader__do_spm_magic_exitstrategy(0xf4a9), // brne +21
   (((0x30 | ((HAVE_SPMINTEREFACE_MAGICVALUE >> 20) & 0xf))<<8) | (0x60 | ((HAVE_SPMINTEREFACE_MAGICVALUE >> 16) & 0xf))), // r22
-  0xf499, // brne +19
+  bootloader__do_spm_magic_exitstrategy(0xf499), // brne +19
   (((0x30 | ((HAVE_SPMINTEREFACE_MAGICVALUE >> 12) & 0xf))<<8) | (0x50 | ((HAVE_SPMINTEREFACE_MAGICVALUE >>  8) & 0xf))), // r21
-  0xf489, // brne +17
+  bootloader__do_spm_magic_exitstrategy(0xf489), // brne +17
   (((0x30 | ((HAVE_SPMINTEREFACE_MAGICVALUE >>  4) & 0xf))<<8) | (0x40 | ((HAVE_SPMINTEREFACE_MAGICVALUE >>  0) & 0xf))), // r20
-  0xf479, // brne +15
+  bootloader__do_spm_magic_exitstrategy(0xf479), // brne +15
 #else
 const uint16_t bootloader__do_spm[16] BOOTLIBLINK = {
 #endif

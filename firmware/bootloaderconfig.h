@@ -143,6 +143,14 @@ these macros are defined, the boot loader usees them.
  * feature.
  */
 
+#define HAVE_SPMINTEREFACE_NORETMAGIC	1
+/*
+ * If sth. went wrong within "bootloader__do_spm" and this macro is ACTIVATED,
+ * then "bootloader__do_spm" will not return the call and loop infinity instead.
+ * 
+ * This feature prevents old updaters to do sth. undefined on wrong magic.
+ */
+
 /* all boards should use a magic to make it safe to confuse updatefiles :-)  */
 #define HAVE_SPMINTEREFACE_MAGICVALUE    0
 /* If this feature is enabled (value != 0), the configured 32bit value is 
