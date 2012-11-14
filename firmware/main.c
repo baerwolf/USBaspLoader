@@ -41,12 +41,11 @@
 #include <string.h>
 
 
+
+static void leaveBootloader() __attribute__((__noreturn__));
+
 #include "bootloaderconfig.h"
 #include "usbdrv/usbdrv.c"
-
-#if BOOTLOADER_CAN_EXIT
-static void leaveBootloader() __attribute__((__noreturn__));
-#endif
 
 #ifndef BOOTLOADER_ADDRESS
   #error need to know the bootloaders flash address!
@@ -180,7 +179,6 @@ static const uchar  signatureBytes[4] = {
 
 /* ------------------------------------------------------------------------ */
 
-#if BOOTLOADER_CAN_EXIT
 static void (*nullVector)(void) __attribute__((__noreturn__));
 
 static void leaveBootloader()
@@ -201,7 +199,6 @@ static void leaveBootloader()
  */
     nullVector();
 }
-#endif
 
 /* ------------------------------------------------------------------------ */
 
@@ -454,9 +451,7 @@ int __attribute__((noreturn)) main(void)
         }while (1);  		/* main event loop */
 #endif
     }
-#if BOOTLOADER_CAN_EXIT
     leaveBootloader();
-#endif
 }
 
 /* ------------------------------------------------------------------------ */

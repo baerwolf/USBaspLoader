@@ -274,12 +274,10 @@ static inline void  bootLoaderInit(void)
     MCUCSR = 0;                     /* clear all reset flags for next time */
 }
 
-#if BOOTLOADER_CAN_EXIT
 static inline void  bootLoaderExit(void)
 {
     PIN_PORT(JUMPER_PORT) = 0;		/* undo bootLoaderInit() changes */
 }
-#endif
 
 #define bootLoaderCondition()		((PIN_PIN(JUMPER_PORT) & (1 << PIN(JUMPER_PORT, JUMPER_BIT))) == 0)
 
