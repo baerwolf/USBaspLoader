@@ -26,38 +26,38 @@ LOCKOPT = -U lock:w:0x3f:m
 
 # standard atmega8 needs BODLEVEL to be programed, since it is a 5V device
 # you may also want to UNprogram  SUT1 to get a SLOWER bootup (lfuse then would be 0x3f)
-FUSEOPT_8            = -U hfuse:w:0xc0:m -U lfuse:w:0x1f:m
+FUSEOPT_8            = -U lfuse:w:0x1f:m -U hfuse:w:0xc0:m
 BOOTLOADER_ADDRESS_8 = 0x1800
 
 
 #untested (WARNING: may destroy ISP ability!)
 #device always should select maximum bootloader-section size
 #please mail tests-reports to matrixstorm@gmx.de:
-FUSEOPT_32              = unknown
+FUSEOPT_32              = -U lfuse:w:0x1f:m -U hfuse:w:0xc0:m
 BOOTLOADER_ADDRESS_32   = 0x7000
 
-FUSEOPT_88              = -U hfuse:w:0xd6:m -U lfuse:w:0xdf:m -U efuse:w:0x00:m
+FUSEOPT_88              = -U lfuse:w:0xd7:m -U hfuse:w:0xd4:m -U efuse:w:0xf8:m
 BOOTLOADER_ADDRESS_88   = 0x1800
 
-FUSEOPT_164             = unknown
+FUSEOPT_164             = -U lfuse:w:0xd7:m -U hfuse:w:0xd0:m -U efuse:w:0xfc:m
 BOOTLOADER_ADDRESS_164  = 0x3800
 
-FUSEOPT_168             = -U hfuse:w:0xd6:m -U lfuse:w:0xdf:m -U efuse:w:0x00:m
+FUSEOPT_168             = $(FUSEOPT_88)
 BOOTLOADER_ADDRESS_168  = 0x3800
 
-FUSEOPT_324             = unknown
+FUSEOPT_324             = $(FUSEOPT_164)
 BOOTLOADER_ADDRESS_324  = 0x7000
 
-FUSEOPT_328             = -U lfuse:w:0xf7:m -U hfuse:w:0xda:m -U efuse:w:0x03:m
+FUSEOPT_328             = -U lfuse:w:0xd7:m -U hfuse:w:0xd0:m -U efuse:w:0xfc:m
 BOOTLOADER_ADDRESS_328  = 0x7000
 
-FUSEOPT_644             = unknown
+FUSEOPT_644             = $(FUSEOPT_324)
 BOOTLOADER_ADDRESS_644  = 0xE000
 
-FUSEOPT_128             = unknown
+FUSEOPT_128             = -U lfuse:w:0x1f:m -U hfuse:w:0xc0:m -U efuse:w:0xfd:m
 BOOTLOADER_ADDRESS_128  = 0x1E000
 
-FUSEOPT_1284            = unknown
+FUSEOPT_1284            = $(FUSEOPT_644)
 BOOTLOADER_ADDRESS_1284 = 0x1E000
 
 
