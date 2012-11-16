@@ -12,6 +12,7 @@
 
 #ifndef __bootloaderconfig_h_included__
 #define __bootloaderconfig_h_included__
+#include <avr/io.h>
 
 /*
 General Description:

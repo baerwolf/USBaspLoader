@@ -23,6 +23,7 @@ Thanks to Oleg Semyonov for his help with the IAR tools port!
 
 #ifndef __usbportability_h_INCLUDED__
 #define __usbportability_h_INCLUDED__
+#include "usbconfig.h"
 
 /* We check explicitly for IAR and CodeVision. Default is avr-gcc/avr-libc. */
 

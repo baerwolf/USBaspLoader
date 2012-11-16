@@ -99,7 +99,11 @@
  * of the macros usbDisableAllRequests() and usbEnableAllRequests() in
  * usbdrv.h.
  */
-#define USB_CFG_DRIVER_FLASH_PAGE       0
+#if defined(BOOTLOADER_ADDRESS)
+#	define USB_CFG_DRIVER_FLASH_PAGE       (BOOTLOADER_ADDRESS >> 16)
+#else
+#	define USB_CFG_DRIVER_FLASH_PAGE       0
+#endif
 /* If the device has more than 64 kBytes of flash, define this to the 64 k page
  * where the driver's constants (descriptors) are located. Or in other words:
  * Define this to 1 for boot loaders on the ATMega128.
