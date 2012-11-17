@@ -50,6 +50,7 @@ static void leaveBootloader() __attribute__((__noreturn__));
 #ifndef BOOTLOADER_ADDRESS
   #error need to know the bootloaders flash address!
 #endif
+#define BOOTLOADER_PAGEADDR	(BOOTLOADER_ADDRESS - (BOOTLOADER_ADDRESS % SPM_PAGESIZE))
 
 /* ------------------------------------------------------------------------ */
 
@@ -256,7 +257,11 @@ static uchar    replyBuffer[4];
 #if HAVE_CHIP_ERASE
         }else if(rq->wValue.bytes[0] == 0xac && rq->wValue.bytes[1] == 0x80){  /* chip erase */
             addr_t addr;
-            for(addr = 0; addr < FLASHEND + 1 - 2048; addr += SPM_PAGESIZE) {
+#if HAVE_BLB11_SOFTW_LOCKBIT
+            for(addr = 0; addr < (addr_t)(BOOTLOADER_PAGEADDR) ; addr += SPM_PAGESIZE) {
+#else
+            for(addr = 0; addr <= (addr_t)(FLASHEND) ; addr += SPM_PAGESIZE) {
+#endif
                 /* wait and erase page */
                 DBG1(0x33, 0, 0);
 #   ifndef NO_FLASH_WRITE
@@ -323,7 +328,7 @@ uchar   isLast;
         uchar i;
         for(i = 0; i < len;){
 #if HAVE_BLB11_SOFTW_LOCKBIT
-	    if (CURRENT_ADDRESS >= (addr_t)(BOOTLOADER_ADDRESS)) {
+	    if (CURRENT_ADDRESS >= (addr_t)(BOOTLOADER_PAGEADDR)) {
 	      return 1;
 	    }
 #endif
