@@ -239,6 +239,13 @@ these macros are defined, the boot loader usees them.
  * Therefore it is very small, which saves some PROGMEM bytes!
  */
 
+#define HAVE_FLASH_BYTE_READACCESS	1
+/* If HAVE_FLASH_BYTE_READACCESS is defined to 1, byte mode access to FLASH is
+ * compiled in. Byte mode sometimes might be used by some programming softwares
+ * (avrdude in terminal mode). Without this feature the device would return "0"
+ * instead the right content of the flash memory.
+ */
+
 //#define SIGNATURE_BYTES             0x1e, 0x93, 0x07, 0     /* ATMega8 */
 /* This macro defines the signature bytes returned by the emulated USBasp to
  * the programmer software. They should match the actual device at least in

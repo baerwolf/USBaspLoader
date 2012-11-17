@@ -248,6 +248,20 @@ static uchar    replyBuffer[4];
 	#warning "HAVE_READ_LOCK_FUSE is activated but MCU unknown -> will not support this feature"
 #endif
 #endif
+#if HAVE_FLASH_BYTE_READACCESS
+        }else if(rq->wValue.bytes[0] == 0x20){  /* read FLASH low  byte */
+#if ((FLASHEND) > 65535)
+            rval = pgm_read_byte_far((((addr_t)address.word)<<1)+0);
+#else
+            rval = pgm_read_byte((((addr_t)address.word)<<1)+0);
+#endif
+        }else if(rq->wValue.bytes[0] == 0x28){  /* read FLASH high byte */
+#if ((FLASHEND) > 65535)
+            rval = pgm_read_byte_far((((addr_t)address.word)<<1)+1);
+#else
+            rval = pgm_read_byte((((addr_t)address.word)<<1)+1);
+#endif
+#endif
 #if HAVE_EEPROM_BYTE_ACCESS
         }else if(rq->wValue.bytes[0] == 0xa0){  /* read EEPROM byte */
             rval = eeprom_read_byte((void *)address.word);
