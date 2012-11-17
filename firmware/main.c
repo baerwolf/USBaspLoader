@@ -378,7 +378,11 @@ uchar   i;
         if(currentRequest >= USBASP_FUNC_READEEPROM){
             *data = eeprom_read_byte((void *)currentAddress.w[0]);
         }else{
-            *data = pgm_read_byte((void *)CURRENT_ADDRESS);
+#if ((FLASHEND) > 65535)
+            *data = pgm_read_byte_far(CURRENT_ADDRESS);
+#else
+            *data = pgm_read_byte(CURRENT_ADDRESS);
+#endif
         }
         data++;
         CURRENT_ADDRESS++;
