@@ -203,6 +203,92 @@ static void leaveBootloader()
 
 /* ------------------------------------------------------------------------ */
 
+
+uchar usbFunctionSetup_USBASP_FUNC_TRANSMIT(usbRequest_t *rq) {
+  uchar rval = 0;
+  usbWord_t address;
+  address.bytes[1] = rq->wValue.bytes[1];
+  address.bytes[0] = rq->wIndex.bytes[0];
+
+  if(rq->wValue.bytes[0] == 0x30){        /* read signature */
+    rval = rq->wIndex.bytes[0] & 3;
+    rval = signatureBytes[rval];
+#if HAVE_READ_LOCK_FUSE
+#if defined (__AVR_ATmega8__) || defined (__AVR_ATmega8A__) || defined (__AVR_ATmega32__)
+  }else if(rq->wValue.bytes[0] == 0x58 && rq->wValue.bytes[1] == 0x00){  /* read lock bits */
+      rval = boot_lock_fuse_bits_get(GET_LOCK_BITS);
+  }else if(rq->wValue.bytes[0] == 0x50 && rq->wValue.bytes[1] == 0x00){  /* read lfuse bits */
+      rval = boot_lock_fuse_bits_get(GET_LOW_FUSE_BITS);
+  }else if(rq->wValue.bytes[0] == 0x58 && rq->wValue.bytes[1] == 0x08){  /* read hfuse bits */
+      rval = boot_lock_fuse_bits_get(GET_HIGH_FUSE_BITS);
+
+#elif defined (__AVR_ATmega48__)   || defined (__AVR_ATmega48A__)   || defined (__AVR_ATmega48P__)   || defined (__AVR_ATmega48PA__)  ||  \
+defined (__AVR_ATmega88__)   || defined (__AVR_ATmega88A__)   || defined (__AVR_ATmega88P__)   || defined (__AVR_ATmega88PA__)  ||  \
+defined (__AVR_ATmega164A__) || defined (__AVR_ATmega164P__)  || 								      \
+defined (__AVR_ATmega168__)  || defined (__AVR_ATmega168A__)  || defined (__AVR_ATmega168P__)  || defined (__AVR_ATmega168PA__) ||  \
+defined (__AVR_ATmega324A__) || defined (__AVR_ATmega324P__)  ||								      \
+defined (__AVR_ATmega328__)  || defined (__AVR_ATmega328P__)  ||								      \
+defined (__AVR_ATmega644__)  || defined (__AVR_ATmega644A__)  || defined (__AVR_ATmega644P__) || defined (__AVR_ATmega644PA__)  ||  \
+defined (__AVR_ATmega128__)  ||													      \
+defined (__AVR_ATmega1284__) || defined (__AVR_ATmega1284P__)
+  }else if(rq->wValue.bytes[0] == 0x58 && rq->wValue.bytes[1] == 0x00){  /* read lock bits */
+      rval = boot_lock_fuse_bits_get(GET_LOCK_BITS);
+  }else if(rq->wValue.bytes[0] == 0x50 && rq->wValue.bytes[1] == 0x00){  /* read lfuse bits */
+      rval = boot_lock_fuse_bits_get(GET_LOW_FUSE_BITS);
+  }else if(rq->wValue.bytes[0] == 0x58 && rq->wValue.bytes[1] == 0x08){  /* read hfuse bits */
+      rval = boot_lock_fuse_bits_get(GET_HIGH_FUSE_BITS);
+  }else if(rq->wValue.bytes[0] == 0x50 && rq->wValue.bytes[1] == 0x08){  /* read efuse bits */
+      rval = boot_lock_fuse_bits_get(GET_EXTENDED_FUSE_BITS );
+#else
+  #warning "HAVE_READ_LOCK_FUSE is activated but MCU unknown -> will not support this feature"
+#endif
+#endif
+#if HAVE_FLASH_BYTE_READACCESS
+  }else if(rq->wValue.bytes[0] == 0x20){  /* read FLASH low  byte */
+#if ((FLASHEND) > 65535)
+      rval = pgm_read_byte_far((((addr_t)address.word)<<1)+0);
+#else
+      rval = pgm_read_byte((((addr_t)address.word)<<1)+0);
+#endif
+  }else if(rq->wValue.bytes[0] == 0x28){  /* read FLASH high byte */
+#if ((FLASHEND) > 65535)
+      rval = pgm_read_byte_far((((addr_t)address.word)<<1)+1);
+#else
+      rval = pgm_read_byte((((addr_t)address.word)<<1)+1);
+#endif
+#endif
+#if HAVE_EEPROM_BYTE_ACCESS
+  }else if(rq->wValue.bytes[0] == 0xa0){  /* read EEPROM byte */
+      rval = eeprom_read_byte((void *)address.word);
+  }else if(rq->wValue.bytes[0] == 0xc0){  /* write EEPROM byte */
+      eeprom_write_byte((void *)address.word, rq->wIndex.bytes[1]);
+#endif
+#if HAVE_CHIP_ERASE
+  }else if(rq->wValue.bytes[0] == 0xac && rq->wValue.bytes[1] == 0x80){  /* chip erase */
+      addr_t addr;
+#if HAVE_BLB11_SOFTW_LOCKBIT
+      for(addr = 0; addr < (addr_t)(BOOTLOADER_PAGEADDR) ; addr += SPM_PAGESIZE) {
+#else
+      for(addr = 0; addr <= (addr_t)(FLASHEND) ; addr += SPM_PAGESIZE) {
+#endif
+	  /* wait and erase page */
+	  DBG1(0x33, 0, 0);
+#   ifndef NO_FLASH_WRITE
+	  boot_spm_busy_wait();
+	  cli();
+	  boot_page_erase(addr);
+	  sei();
+#   endif
+      }
+#endif
+  }else{
+      /* ignore all others, return default value == 0 */
+  }
+        
+  return rval;
+}
+
+
 uchar   usbFunctionSetup(uchar data[8])
 {
 usbRequest_t    *rq = (void *)data;
@@ -211,85 +297,7 @@ static uchar    replyBuffer[4];
 
     usbMsgPtr = replyBuffer;
     if(rq->bRequest == USBASP_FUNC_TRANSMIT){   /* emulate parts of ISP protocol */
-        uchar rval = 0;
-        usbWord_t address;
-        address.bytes[1] = rq->wValue.bytes[1];
-        address.bytes[0] = rq->wIndex.bytes[0];
-        if(rq->wValue.bytes[0] == 0x30){        /* read signature */
-            rval = rq->wIndex.bytes[0] & 3;
-            rval = signatureBytes[rval];
-#if HAVE_READ_LOCK_FUSE
-#if defined (__AVR_ATmega8__) || defined (__AVR_ATmega8A__) || defined (__AVR_ATmega32__)
-        }else if(rq->wValue.bytes[0] == 0x58 && rq->wValue.bytes[1] == 0x00){  /* read lock bits */
-            rval = boot_lock_fuse_bits_get(GET_LOCK_BITS);
-        }else if(rq->wValue.bytes[0] == 0x50 && rq->wValue.bytes[1] == 0x00){  /* read lfuse bits */
-            rval = boot_lock_fuse_bits_get(GET_LOW_FUSE_BITS);
-        }else if(rq->wValue.bytes[0] == 0x58 && rq->wValue.bytes[1] == 0x08){  /* read hfuse bits */
-            rval = boot_lock_fuse_bits_get(GET_HIGH_FUSE_BITS);
-
-#elif defined (__AVR_ATmega48__)   || defined (__AVR_ATmega48A__)   || defined (__AVR_ATmega48P__)   || defined (__AVR_ATmega48PA__)  ||  \
-      defined (__AVR_ATmega88__)   || defined (__AVR_ATmega88A__)   || defined (__AVR_ATmega88P__)   || defined (__AVR_ATmega88PA__)  ||  \
-      defined (__AVR_ATmega164A__) || defined (__AVR_ATmega164P__)  || 								      \
-      defined (__AVR_ATmega168__)  || defined (__AVR_ATmega168A__)  || defined (__AVR_ATmega168P__)  || defined (__AVR_ATmega168PA__) ||  \
-      defined (__AVR_ATmega324A__) || defined (__AVR_ATmega324P__)  ||								      \
-      defined (__AVR_ATmega328__)  || defined (__AVR_ATmega328P__)  ||								      \
-      defined (__AVR_ATmega644__)  || defined (__AVR_ATmega644A__)  || defined (__AVR_ATmega644P__) || defined (__AVR_ATmega644PA__)  ||  \
-      defined (__AVR_ATmega128__)  ||													      \
-      defined (__AVR_ATmega1284__) || defined (__AVR_ATmega1284P__)
-        }else if(rq->wValue.bytes[0] == 0x58 && rq->wValue.bytes[1] == 0x00){  /* read lock bits */
-            rval = boot_lock_fuse_bits_get(GET_LOCK_BITS);
-        }else if(rq->wValue.bytes[0] == 0x50 && rq->wValue.bytes[1] == 0x00){  /* read lfuse bits */
-            rval = boot_lock_fuse_bits_get(GET_LOW_FUSE_BITS);
-        }else if(rq->wValue.bytes[0] == 0x58 && rq->wValue.bytes[1] == 0x08){  /* read hfuse bits */
-            rval = boot_lock_fuse_bits_get(GET_HIGH_FUSE_BITS);
-        }else if(rq->wValue.bytes[0] == 0x50 && rq->wValue.bytes[1] == 0x08){  /* read efuse bits */
-            rval = boot_lock_fuse_bits_get(GET_EXTENDED_FUSE_BITS );
-#else
-	#warning "HAVE_READ_LOCK_FUSE is activated but MCU unknown -> will not support this feature"
-#endif
-#endif
-#if HAVE_FLASH_BYTE_READACCESS
-        }else if(rq->wValue.bytes[0] == 0x20){  /* read FLASH low  byte */
-#if ((FLASHEND) > 65535)
-            rval = pgm_read_byte_far((((addr_t)address.word)<<1)+0);
-#else
-            rval = pgm_read_byte((((addr_t)address.word)<<1)+0);
-#endif
-        }else if(rq->wValue.bytes[0] == 0x28){  /* read FLASH high byte */
-#if ((FLASHEND) > 65535)
-            rval = pgm_read_byte_far((((addr_t)address.word)<<1)+1);
-#else
-            rval = pgm_read_byte((((addr_t)address.word)<<1)+1);
-#endif
-#endif
-#if HAVE_EEPROM_BYTE_ACCESS
-        }else if(rq->wValue.bytes[0] == 0xa0){  /* read EEPROM byte */
-            rval = eeprom_read_byte((void *)address.word);
-        }else if(rq->wValue.bytes[0] == 0xc0){  /* write EEPROM byte */
-            eeprom_write_byte((void *)address.word, rq->wIndex.bytes[1]);
-#endif
-#if HAVE_CHIP_ERASE
-        }else if(rq->wValue.bytes[0] == 0xac && rq->wValue.bytes[1] == 0x80){  /* chip erase */
-            addr_t addr;
-#if HAVE_BLB11_SOFTW_LOCKBIT
-            for(addr = 0; addr < (addr_t)(BOOTLOADER_PAGEADDR) ; addr += SPM_PAGESIZE) {
-#else
-            for(addr = 0; addr <= (addr_t)(FLASHEND) ; addr += SPM_PAGESIZE) {
-#endif
-                /* wait and erase page */
-                DBG1(0x33, 0, 0);
-#   ifndef NO_FLASH_WRITE
-                boot_spm_busy_wait();
-                cli();
-                boot_page_erase(addr);
-                sei();
-#   endif
-            }
-#endif
-        }else{
-            /* ignore all others, return default value == 0 */
-        }
-        replyBuffer[3] = rval;
+        replyBuffer[3] = usbFunctionSetup_USBASP_FUNC_TRANSMIT(rq);
         len = 4;
     }else if((rq->bRequest == USBASP_FUNC_ENABLEPROG) || (rq->bRequest == USBASP_FUNC_SETISPSCK)){
         /* replyBuffer[0] = 0; is never touched and thus always 0 which means success */
