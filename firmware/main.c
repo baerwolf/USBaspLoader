@@ -326,55 +326,52 @@ static uchar    replyBuffer[4];
 
 uchar usbFunctionWrite(uchar *data, uchar len)
 {
-uchar   isLast;
+uchar   i,isLast;
 
     DBG1(0x31, (void *)&currentAddress.l, 4);
     if(len > bytesRemaining)
         len = bytesRemaining;
     bytesRemaining -= len;
     isLast = bytesRemaining == 0;
-    if(currentRequest >= USBASP_FUNC_READEEPROM){
-        uchar i;
-        for(i = 0; i < len; i++){
-            eeprom_write_byte((void *)(currentAddress.w[0]++), *data++);
-        }
-    }else{
-        uchar i;
-        for(i = 0; i < len;){
+    for(i = 0; i < len;) {
+      if(currentRequest >= USBASP_FUNC_READEEPROM){
+	eeprom_write_byte((void *)(currentAddress.w[0]++), *data++);
+	i++;
+      } else {
 #if HAVE_BLB11_SOFTW_LOCKBIT
-	    if (CURRENT_ADDRESS >= (addr_t)(BOOTLOADER_PAGEADDR)) {
-	      return 1;
-	    }
+	if (CURRENT_ADDRESS >= (addr_t)(BOOTLOADER_PAGEADDR)) {
+	  return 1;
+	}
 #endif
-            i += 2;
-            DBG1(0x32, 0, 0);
-            cli();
-            boot_page_fill(CURRENT_ADDRESS, *(short *)data);
-            sei();
-            CURRENT_ADDRESS += 2;
-            data += 2;
-            /* write page when we cross page boundary or we have the last partial page */
-            if((currentAddress.w[0] & (SPM_PAGESIZE - 1)) == 0 || (isLast && i >= len && isLastPage)){
+	i += 2;
+	DBG1(0x32, 0, 0);
+	cli();
+	boot_page_fill(CURRENT_ADDRESS, *(short *)data);
+	sei();
+	CURRENT_ADDRESS += 2;
+	data += 2;
+	/* write page when we cross page boundary or we have the last partial page */
+	if((currentAddress.w[0] & (SPM_PAGESIZE - 1)) == 0 || (isLast && i >= len && isLastPage)){
 #if (!HAVE_CHIP_ERASE) || (HAVE_ONDEMAND_PAGEERASE)
-                DBG1(0x33, 0, 0);
+	    DBG1(0x33, 0, 0);
 #   ifndef NO_FLASH_WRITE
-                cli();
-                boot_page_erase(CURRENT_ADDRESS - 2);   /* erase page */
-                sei();
-                boot_spm_busy_wait();                   /* wait until page is erased */
+	    cli();
+	    boot_page_erase(CURRENT_ADDRESS - 2);   /* erase page */
+	    sei();
+	    boot_spm_busy_wait();                   /* wait until page is erased */
 #   endif
 #endif
-                DBG1(0x34, 0, 0);
+	    DBG1(0x34, 0, 0);
 #ifndef NO_FLASH_WRITE
-                cli();
-                boot_page_write(CURRENT_ADDRESS - 2);
-                sei();
-                boot_spm_busy_wait();
-                cli();
-                boot_rww_enable();
-                sei();
+	    cli();
+	    boot_page_write(CURRENT_ADDRESS - 2);
+	    sei();
+	    boot_spm_busy_wait();
+	    cli();
+	    boot_rww_enable();
+	    sei();
 #endif
-            }
+	}
         }
         DBG1(0x35, (void *)&currentAddress.l, 4);
     }
