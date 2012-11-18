@@ -11,6 +11,10 @@ DEVICE = atmega8
 # where the updating firmware should be located (starting address)
 FLASHADDRESS = 0x0000
 
+# some MCU independend defines...
+#...will be extended within MCU dependend configuration below...
+DEFINES = -DCONFIG_NO__CHIP_ERASE -DCONFIG_NO__ONDEMAND_PAGEERASE
+
 # some MCUs with small BLS (bootloader section) need to deactivate some
 # features in order to fit into BLS.
 # If this option is enabled, also essential features may become deactivated
@@ -28,6 +32,7 @@ LOCKOPT = -U lock:w:0x3f:m
 # you may also want to UNprogram  SUT1 to get a SLOWER bootup (lfuse then would be 0x3f)
 FUSEOPT_8            = -U lfuse:w:0x1f:m -U hfuse:w:0xc0:m
 BOOTLOADER_ADDRESS_8 = 0x1800
+DEFINES_8            = -DCONFIG_NO__BOOTLOADER_CAN_EXIT -DCONFIG_NO__PRECISESLEEP
 
 
 #untested (WARNING: may destroy ISP ability!)
@@ -35,153 +40,192 @@ BOOTLOADER_ADDRESS_8 = 0x1800
 #please mail tests-reports to matrixstorm@gmx.de:
 FUSEOPT_32              = -U lfuse:w:0x1f:m -U hfuse:w:0xc0:m
 BOOTLOADER_ADDRESS_32   = 0x7000
+DEFINES_32              = #-DEMPTY
+
+
 
 FUSEOPT_88              = -U lfuse:w:0xd7:m -U hfuse:w:0xd4:m -U efuse:w:0xf8:m
 BOOTLOADER_ADDRESS_88   = 0x1800
+DEFINES_88              = -DCONFIG_NO__HAVE_READ_LOCK_FUSE
+
+
 
 FUSEOPT_164             = -U lfuse:w:0xd7:m -U hfuse:w:0xd0:m -U efuse:w:0xfc:m
 BOOTLOADER_ADDRESS_164  = 0x3800
+DEFINES_164             = -DCONFIG_NO__HAVE_READ_LOCK_FUSE -DCONFIG_NO__BOOTLOADER_CAN_EXIT
+
+
 
 FUSEOPT_168             = $(FUSEOPT_88)
 BOOTLOADER_ADDRESS_168  = 0x3800
-
-FUSEOPT_324             = $(FUSEOPT_164)
-BOOTLOADER_ADDRESS_324  = 0x7000
-
-FUSEOPT_328             = -U lfuse:w:0xd7:m -U hfuse:w:0xd0:m -U efuse:w:0xfc:m
-BOOTLOADER_ADDRESS_328  = 0x7000
-
-FUSEOPT_644             = $(FUSEOPT_324)
-BOOTLOADER_ADDRESS_644  = 0xE000
-
-FUSEOPT_128             = -U lfuse:w:0x1f:m -U hfuse:w:0xc0:m -U efuse:w:0xfd:m
-BOOTLOADER_ADDRESS_128  = 0x1E000
-
-FUSEOPT_1284            = $(FUSEOPT_644)
-BOOTLOADER_ADDRESS_1284 = 0x1E000
-
-
-
 ifeq ($(DANGEROUS), 1)
-  CHOOSEFLASHSAVE = -DCONFIG_NO__NEED_WATCHDOG
+DEFINES_168             = -DCONFIG_NO__HAVE_READ_LOCK_FUSE -DCONFIG_NO__NEED_WATCHDOG
 else
-  CHOOSEFLASHSAVE = -DCONFIG_NO__BOOTLOADER_CAN_EXIT
+DEFINES_168             = -DCONFIG_NO__HAVE_READ_LOCK_FUSE -DCONFIG_NO__BOOTLOADER_CAN_EXIT
 endif
 
 
+
+FUSEOPT_324             = $(FUSEOPT_164)
+BOOTLOADER_ADDRESS_324  = 0x7000
+DEFINES_324             = #-DEMPTY
+
+
+
+FUSEOPT_328             = -U lfuse:w:0xd7:m -U hfuse:w:0xd0:m -U efuse:w:0xfc:m
+BOOTLOADER_ADDRESS_328  = 0x7000
+DEFINES_328             = #-DEMPTY
+
+
+
+FUSEOPT_644             = $(FUSEOPT_324)
+BOOTLOADER_ADDRESS_644  = 0xE000
+DEFINES_644             = #-DEMPTY
+
+
+
+FUSEOPT_128             = -U lfuse:w:0x1f:m -U hfuse:w:0xc0:m -U efuse:w:0xfd:m
+BOOTLOADER_ADDRESS_128  = 0x1E000
+DEFINES_128             = #-DEMPTY
+
+
+
+FUSEOPT_1284            = $(FUSEOPT_644)
+BOOTLOADER_ADDRESS_1284 = 0x1E000
+DEFINES_1284            = #-DEMPTY
+
+
+
+
+
+
+
 #autoselect logic
-DEFINES = #-DDEBUG_LEVEL=2
 ifeq ($(DEVICE), atmega8)
   FUSEOPT            = $(FUSEOPT_8)
   BOOTLOADER_ADDRESS = $(BOOTLOADER_ADDRESS_8) 
   MCUARCH            = avr4
+  DEFINES	     += $(DEFINES_8)
 else ifeq ($(DEVICE), atmega32)
   FUSEOPT            = $(FUSEOPT_32)
   BOOTLOADER_ADDRESS = $(BOOTLOADER_ADDRESS_32)
   MCUARCH            = avr5
+  DEFINES	     += $(DEFINES_32)
 else ifeq ($(DEVICE), atmega88)
   FUSEOPT            = $(FUSEOPT_88)
   BOOTLOADER_ADDRESS = $(BOOTLOADER_ADDRESS_88)
   MCUARCH            = avr4
-  DEFINES	     += -DCONFIG_NO__HAVE_READ_LOCK_FUSE
+  DEFINES	     += $(DEFINES_88)
 else ifeq ($(DEVICE), atmega88a)
   FUSEOPT            = $(FUSEOPT_88)
   BOOTLOADER_ADDRESS = $(BOOTLOADER_ADDRESS_88)
   MCUARCH            = avr4
-  DEFINES	     += -DCONFIG_NO__HAVE_READ_LOCK_FUSE
+  DEFINES	     += $(DEFINES_88)
 else ifeq ($(DEVICE), atmega88p)
   FUSEOPT            = $(FUSEOPT_88)
   BOOTLOADER_ADDRESS = $(BOOTLOADER_ADDRESS_88)
   MCUARCH            = avr4
-  DEFINES	     += -DCONFIG_NO__HAVE_READ_LOCK_FUSE
+  DEFINES	     += $(DEFINES_88)
 else ifeq ($(DEVICE), atmega88pa)
   FUSEOPT            = $(FUSEOPT_88)
   BOOTLOADER_ADDRESS = $(BOOTLOADER_ADDRESS_88)
   MCUARCH            = avr4
-  DEFINES	     += -DCONFIG_NO__HAVE_READ_LOCK_FUSE
+  DEFINES	     += $(DEFINES_88)
 else ifeq ($(DEVICE), atmega164a)
   FUSEOPT            = $(FUSEOPT_164)
   BOOTLOADER_ADDRESS = $(BOOTLOADER_ADDRESS_164)
   MCUARCH            = avr5
-  DEFINES	     += -DCONFIG_NO__HAVE_READ_LOCK_FUSE -DCONFIG_NO__BOOTLOADER_CAN_EXIT
+  DEFINES	     += $(DEFINES_164)
 else ifeq ($(DEVICE), atmega164p)
   FUSEOPT            = $(FUSEOPT_164)
   BOOTLOADER_ADDRESS = $(BOOTLOADER_ADDRESS_164)
   MCUARCH            = avr5
-  DEFINES	     += -DCONFIG_NO__HAVE_READ_LOCK_FUSE -DCONFIG_NO__BOOTLOADER_CAN_EXIT
+  DEFINES	     += $(DEFINES_164)
 else ifeq ($(DEVICE), atmega164pa)
   FUSEOPT            = $(FUSEOPT_164)
   BOOTLOADER_ADDRESS = $(BOOTLOADER_ADDRESS_164)
   MCUARCH            = avr5
-  DEFINES	     += -DCONFIG_NO__HAVE_READ_LOCK_FUSE -DCONFIG_NO__BOOTLOADER_CAN_EXIT
+  DEFINES	     += $(DEFINES_164)
 else ifeq ($(DEVICE), atmega168)
   FUSEOPT            = $(FUSEOPT_168)
   BOOTLOADER_ADDRESS = $(BOOTLOADER_ADDRESS_168)
   MCUARCH            = avr5
-  DEFINES	     += -DCONFIG_NO__HAVE_READ_LOCK_FUSE $(CHOOSEFLASHSAVE)
+  DEFINES	     += $(DEFINES_168)
 else ifeq ($(DEVICE), atmega168a)
   FUSEOPT            = $(FUSEOPT_168)
   BOOTLOADER_ADDRESS = $(BOOTLOADER_ADDRESS_168)
   MCUARCH            = avr5
-  DEFINES	     += -DCONFIG_NO__HAVE_READ_LOCK_FUSE $(CHOOSEFLASHSAVE)
+  DEFINES	     += $(DEFINES_168)
 else ifeq ($(DEVICE), atmega168p)
   FUSEOPT            = $(FUSEOPT_168)
   BOOTLOADER_ADDRESS = $(BOOTLOADER_ADDRESS_168)
   MCUARCH            = avr5
-  DEFINES	     += -DCONFIG_NO__HAVE_READ_LOCK_FUSE $(CHOOSEFLASHSAVE)
+  DEFINES	     += $(DEFINES_168)
 else ifeq ($(DEVICE), atmega168pa)
   FUSEOPT            = $(FUSEOPT_168)
   BOOTLOADER_ADDRESS = $(BOOTLOADER_ADDRESS_168)
   MCUARCH            = avr5
-  DEFINES	     += -DCONFIG_NO__HAVE_READ_LOCK_FUSE $(CHOOSEFLASHSAVE)
+  DEFINES	     += $(DEFINES_168)
 else ifeq ($(DEVICE), atmega324a)
   FUSEOPT            = $(FUSEOPT_324)
   BOOTLOADER_ADDRESS = $(BOOTLOADER_ADDRESS_324)
   MCUARCH            = avr5
+  DEFINES	     += $(DEFINES_324)
 else ifeq ($(DEVICE), atmega324p)
   FUSEOPT            = $(FUSEOPT_324)
   BOOTLOADER_ADDRESS = $(BOOTLOADER_ADDRESS_324)
   MCUARCH            = avr5
+  DEFINES	     += $(DEFINES_324)
 else ifeq ($(DEVICE), atmega324pa)
   FUSEOPT            = $(FUSEOPT_324)
   BOOTLOADER_ADDRESS = $(BOOTLOADER_ADDRESS_324)
   MCUARCH            = avr5
+  DEFINES	     += $(DEFINES_324)
 else ifeq ($(DEVICE), atmega328)
   FUSEOPT            = $(FUSEOPT_328)
   BOOTLOADER_ADDRESS = $(BOOTLOADER_ADDRESS_328)
   MCUARCH            = avr5
+  DEFINES	     += $(DEFINES_328)
 else ifeq ($(DEVICE), atmega328p)
   FUSEOPT            = $(FUSEOPT_328)
   BOOTLOADER_ADDRESS = $(BOOTLOADER_ADDRESS_328)
   MCUARCH            = avr5
+  DEFINES	     += $(DEFINES_328)
 else ifeq ($(DEVICE), atmega644)
   FUSEOPT            = $(FUSEOPT_644)
   BOOTLOADER_ADDRESS = $(BOOTLOADER_ADDRESS_644)
   MCUARCH            = avr5
+  DEFINES	     += $(DEFINES_644)
 else ifeq ($(DEVICE), atmega644a)
   FUSEOPT            = $(FUSEOPT_644)
   BOOTLOADER_ADDRESS = $(BOOTLOADER_ADDRESS_644)
   MCUARCH            = avr5
+  DEFINES	     += $(DEFINES_644)
 else ifeq ($(DEVICE), atmega644p)
   FUSEOPT            = $(FUSEOPT_644)
   BOOTLOADER_ADDRESS = $(BOOTLOADER_ADDRESS_644)
   MCUARCH            = avr5
+  DEFINES	     += $(DEFINES_644)
 else ifeq ($(DEVICE), atmega644pa)
   FUSEOPT            = $(FUSEOPT_644)
   BOOTLOADER_ADDRESS = $(BOOTLOADER_ADDRESS_644)
   MCUARCH            = avr5
+  DEFINES	     += $(DEFINES_644)
 else ifeq ($(DEVICE), atmega128)
   FUSEOPT            = $(FUSEOPT_128)
   BOOTLOADER_ADDRESS = $(BOOTLOADER_ADDRESS_128)
   MCUARCH            = avr51
+  DEFINES	     += $(DEFINES_128)
 else ifeq ($(DEVICE), atmega1284)
   FUSEOPT            = $(FUSEOPT_1284)
   BOOTLOADER_ADDRESS = $(BOOTLOADER_ADDRESS_1284)
   MCUARCH            = avr51
+  DEFINES	     += $(DEFINES_1284)
 else ifeq ($(DEVICE), atmega1284p)
   FUSEOPT            = $(FUSEOPT_1284)
   BOOTLOADER_ADDRESS = $(BOOTLOADER_ADDRESS_1284)
   MCUARCH            = avr51
+  DEFINES	     += $(DEFINES_1284)
 else
   FUSEOPT = unknown
 endif

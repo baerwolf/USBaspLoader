@@ -187,14 +187,23 @@ these macros are defined, the boot loader usees them.
  * WITH REQUESTING A MAGIC YOU AGREE TO PUBLISHED YOUR DATA SEND WITHIN THE REQUEST 
  */
 
-#define HAVE_EEPROM_PAGED_ACCESS    1
+#ifndef CONFIG_NO__EEPROM_PAGED_ACCESS
+#	define HAVE_EEPROM_PAGED_ACCESS    1
+#else
+#	define HAVE_EEPROM_PAGED_ACCESS    0
+#endif
 /* If HAVE_EEPROM_PAGED_ACCESS is defined to 1, page mode access to EEPROM is
  * compiled in. Whether page mode or byte mode access is used by AVRDUDE
  * depends on the target device. Page mode is only used if the device supports
  * it, e.g. for the ATMega88, 168 etc. You can save quite a bit of memory by
  * disabling page mode EEPROM access. Costs ~ 138 bytes.
  */
-#define HAVE_EEPROM_BYTE_ACCESS     1
+
+#ifndef CONFIG_NO__EEPROM_BYTE_ACCESS
+#	define HAVE_EEPROM_BYTE_ACCESS     1
+#else
+#	define HAVE_EEPROM_BYTE_ACCESS     0
+#endif
 /* If HAVE_EEPROM_BYTE_ACCESS is defined to 1, byte mode access to EEPROM is
  * compiled in. Byte mode is only used if the device (as identified by its
  * signature) does not support page mode for EEPROM. It is required for
@@ -202,23 +211,39 @@ these macros are defined, the boot loader usees them.
  */
 
 #ifndef CONFIG_NO__BOOTLOADER_CAN_EXIT
-  #define BOOTLOADER_CAN_EXIT         1
+#	define BOOTLOADER_CAN_EXIT         1
 #else
-  #define BOOTLOADER_CAN_EXIT         0
+#	define BOOTLOADER_CAN_EXIT         0
 #endif
 /* If this macro is defined to 1, the boot loader will exit shortly after the
  * programmer closes the connection to the device. Costs extra bytes.
  */
 
-#define HAVE_CHIP_ERASE             0
+#ifndef CONFIG_NO__CHIP_ERASE
+#	define HAVE_CHIP_ERASE             1
+#else
+#	define HAVE_CHIP_ERASE             0
+#endif
 /* If this macro is defined to 1, the boot loader implements the Chip Erase
  * ISP command. Otherwise pages are erased on demand before they are written.
  */
+#ifndef CONFIG_NO__ONDEMAND_PAGEERASE
+#	define HAVE_ONDEMAND_PAGEERASE            1
+#else
+#	define HAVE_ONDEMAND_PAGEERASE            0
+#endif
+/* Even if "HAVE_CHIP_ERASE" is avtivated - enabling the "HAVE_ONDEMAND_PAGEERASE"-
+ * feature the bootloader will erase pages on demand short before writing new data
+ * to it.
+ * If pages are not erase before reprogram (for example because user call avrdude -D)
+ * then data may become inconsistent since writing only allow to unset bits in the flash.
+ * This feature may prevent this...
+ */
 
 #ifndef CONFIG_NO__NEED_WATCHDOG
-  #define NEED_WATCHDOG		1
+#	define NEED_WATCHDOG		1
 #else
-  #define NEED_WATCHDOG		0
+#	define NEED_WATCHDOG		0
 #endif
 /* ATTANTION: This macro MUST BE 1, if the MCU has reset enabled watchdog (WDTON is 0).
  * If this macro is defined to 1, the bootloader implements an additional "wdt_disable()"
@@ -228,9 +253,9 @@ these macros are defined, the boot loader usees them.
  */
 
 #ifndef CONFIG_NO__PRECISESLEEP
-  #define HAVE_UNPRECISEWAIT	0
+#	define HAVE_UNPRECISEWAIT	0
 #else
-  #define HAVE_UNPRECISEWAIT	1
+#	define HAVE_UNPRECISEWAIT	1
 #endif
 /* This macro enables hand-optimized assembler code
  * instead to use _sleep_ms for delaying USB enumeration.
@@ -239,7 +264,11 @@ these macros are defined, the boot loader usees them.
  * Therefore it is very small, which saves some PROGMEM bytes!
  */
 
-#define HAVE_FLASH_BYTE_READACCESS	1
+#ifndef CONFIG_NO__FLASH_BYTE_READACCESS
+#	define HAVE_FLASH_BYTE_READACCESS	1
+#else
+#	define HAVE_FLASH_BYTE_READACCESS	0
+#endif
 /* If HAVE_FLASH_BYTE_READACCESS is defined to 1, byte mode access to FLASH is
  * compiled in. Byte mode sometimes might be used by some programming softwares
  * (avrdude in terminal mode). Without this feature the device would return "0"

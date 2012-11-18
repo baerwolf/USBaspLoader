@@ -355,7 +355,7 @@ uchar   isLast;
             data += 2;
             /* write page when we cross page boundary or we have the last partial page */
             if((currentAddress.w[0] & (SPM_PAGESIZE - 1)) == 0 || (isLast && i >= len && isLastPage)){
-#if !HAVE_CHIP_ERASE
+#if (!HAVE_CHIP_ERASE) || (HAVE_ONDEMAND_PAGEERASE)
                 DBG1(0x33, 0, 0);
 #   ifndef NO_FLASH_WRITE
                 cli();
