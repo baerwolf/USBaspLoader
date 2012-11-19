@@ -26,6 +26,11 @@
 #include <util/delay.h>
 #include <string.h>
 
+#define	updater_pagefillcode	((1<<SPMEN))
+#define	updater_pageerasecode	((1<<PGERS) | (1<<SPMEN))
+#define	updater_pagewritecode	((1<<PGWRT) | (1<<SPMEN))
+
+
 #include "../firmware/bootloaderconfig.h"
 #if !HAVE_SPMINTEREFACE
   #error "bootloader does not support updating itself! (HAVE_SPMINTEREFACE)"
@@ -191,7 +196,7 @@ size_t mypgm_WRITEpage(const mypgm_addr_t byteaddress,const void* buffer, const 
     
     if (needs_erase) {
       //do a page-erase, ATTANTION: flash only can be erased a limited number of times !
-      spmfunc(pageaddr_bakup, 0x3, 0);
+      spmfunc(pageaddr_bakup, updater_pageerasecode, 0);
     }
     
     // from now on, the page is assumed empty !! (hopefully our code is located somewhere else!)
@@ -199,12 +204,12 @@ size_t mypgm_WRITEpage(const mypgm_addr_t byteaddress,const void* buffer, const 
     // ATTANTION: see comment on "do_spm" !
     pageaddr	= pageaddr_bakup;
     for (i=0;i<pagesize;i+=1) {
-      spmfunc(pageaddr, 0x1, pagedata[i]);
+      spmfunc(pageaddr, updater_pagefillcode, pagedata[i]);
       pageaddr+=2;
     }
     
     // so, now finally write the page to the FLASH
-    spmfunc(pageaddr_bakup, 0x5, 0);
+    spmfunc(pageaddr_bakup, updater_pagewritecode, 0);
   } else {
     // no change - no write...
     result = 0;
@@ -224,19 +229,19 @@ size_t mypgm_WRITEpage(const mypgm_addr_t byteaddress,const void* buffer, const 
   size_t	i;
     
   //do a page-erase, ATTANTION: flash only can be erased a limited number of times !
-  spmfunc(pageaddr_bakup, 0x3, 0);
+  spmfunc(pageaddr_bakup, updater_pageerasecode, 0);
     
   // from now on, the page is assumed empty !! (hopefully our code is located somewhere else!)
   // now, fill the tempoary buffer
   // ATTANTION: see comment on "do_spm" !
   pageaddr	= pageaddr_bakup;
   for (i=0;i<pagesize;i+=1) {
-    spmfunc(pageaddr, 0x1, pagedata[i]);
+    spmfunc(pageaddr, updater_pagefillcode, pagedata[i]);
     pageaddr+=2;
   }
     
   // so, now finally write the page to the FLASH
-  spmfunc(pageaddr_bakup, 0x5, 0);
+  spmfunc(pageaddr_bakup, updater_pagewritecode, 0);
   
   return result;
 }
