@@ -129,6 +129,23 @@ void temp_do_spm(const uint32_t flash_byteaddress, const uint8_t spmcrval, const
 typedef uint32_t mypgm_addr_t;
 typedef void (*mypgm_spminterface)(const uint32_t flash_byteaddress, const uint8_t spmcrval, const uint16_t dataword);
 
+#if FLASHEND > 65535
+#	define	mymemcpy_PF mymemcpy_PF_far
+void *mymemcpy_PF_far (void *dest, mypgm_addr_t src, size_t n) {
+  uint8_t	*pagedata	= (void*)dest;
+  mypgm_addr_t	 pageaddr	= src;
+  size_t	i;
+
+  for (i=0;i<n;i+=1) {
+    pagedata[i]=pgm_read_byte_far(pageaddr);
+    pageaddr+=1;
+  }
+
+  return dest;
+}
+#else
+#	define	mymemcpy_PF memcpy_PF 
+#endif
 
 #if 0
 size_t mypgm_readpage(const mypgm_addr_t byteaddress,const void* buffer, const size_t bufferbytesize) {
@@ -139,7 +156,7 @@ size_t mypgm_readpage(const mypgm_addr_t byteaddress,const void* buffer, const s
   size_t	i;
   
   for (i=0;i<pagesize;i+=1) {
-    pagedata[i]=pgm_read_word(pageaddr);
+    pagedata[i]=pgm_read_word_far(pageaddr);
     pageaddr+=2;
   }
   
@@ -151,7 +168,7 @@ size_t mypgm_readpage(const mypgm_addr_t byteaddress,const void* buffer, const s
   size_t	result		= (bufferbytesize < SPM_PAGESIZE)?bufferbytesize:SPM_PAGESIZE;
   mypgm_addr_t	pageaddr	= byteaddress - (byteaddress % SPM_PAGESIZE);
   
-  memcpy_PF((void*)buffer, (uint_farptr_t)pageaddr, result);
+  mymemcpy_PF((void*)buffer, (uint_farptr_t)pageaddr, result);
   
   return result;
 }
@@ -171,7 +188,11 @@ size_t mypgm_WRITEpage(const mypgm_addr_t byteaddress,const void* buffer, const 
   
   // just check, if page needs a rewrite or an erase...
   for (i=0;i<pagesize;i+=1) {
+#if (FLASHEND > 65535)
+    deeword=pgm_read_word_far(pageaddr);
+#else
     deeword=pgm_read_word(pageaddr);
+#endif
 
     if (deeword != pagedata[i]) changed=1;
 
@@ -260,8 +281,13 @@ int main(void)
     buffer[0]=0;
     for (i=0;i<SIZEOF_new_firmware;i+=2) {
       uint16_t a, b;
+#if (FLASHEND > 65535)
+      a=pgm_read_word_far((void*)&new_firmware[i]);
+      b=pgm_read_word_far(NEW_BOOTLOADER_ADDRESS+i);
+#else
       a=pgm_read_word((void*)&new_firmware[i]);
       b=pgm_read_word(NEW_BOOTLOADER_ADDRESS+i);
+#endif
       if (a!=b) {
 	buffer[0]=1;
 	break;
@@ -272,7 +298,6 @@ int main(void)
 
     // need to change the firmware...
     if (buffer[0]) {
-
 
       // A
       // copy the current "bootloader__do_spm" to tempoary position via std. "bootloader__do_spm"
@@ -287,7 +312,7 @@ int main(void)
 #ifdef CONFIG_UPDATER_CLEANMEMCLEAR
 	memset((void*)buffer, 0xff, sizeof(buffer));
 #endif
-	memcpy_PF((void*)buffer, (uint_farptr_t)((void*)&new_firmware[i]), ((SIZEOF_new_firmware-i)>sizeof(buffer))?sizeof(buffer):(SIZEOF_new_firmware-i));
+	mymemcpy_PF((void*)buffer, (uint_farptr_t)((void*)&new_firmware[i]), ((SIZEOF_new_firmware-i)>sizeof(buffer))?sizeof(buffer):(SIZEOF_new_firmware-i));
 	
 	mypgm_WRITEpage(NEW_BOOTLOADER_ADDRESS+i, buffer, sizeof(buffer), temp_do_spm);
 	
@@ -300,7 +325,7 @@ int main(void)
 #ifdef CONFIG_UPDATER_CLEANMEMCLEAR
 	memset((void*)buffer, 0xff, sizeof(buffer));
 #endif
-	memcpy_PF((void*)buffer, (uint_farptr_t)((void*)&new_firmware[i]), ((SIZEOF_new_firmware-i)>sizeof(buffer))?sizeof(buffer):(SIZEOF_new_firmware-i));
+	mymemcpy_PF((void*)buffer, (uint_farptr_t)((void*)&new_firmware[i]), ((SIZEOF_new_firmware-i)>sizeof(buffer))?sizeof(buffer):(SIZEOF_new_firmware-i));
 
 	mypgm_WRITEpage(NEW_BOOTLOADER_ADDRESS+i, buffer, sizeof(buffer), new_do_spm);
 	
