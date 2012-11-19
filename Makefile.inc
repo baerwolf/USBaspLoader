@@ -32,7 +32,7 @@ LOCKOPT = -U lock:w:0x3f:m
 # you may also want to UNprogram  SUT1 to get a SLOWER bootup (lfuse then would be 0x3f)
 FUSEOPT_8            = -U lfuse:w:0x1f:m -U hfuse:w:0xc0:m
 BOOTLOADER_ADDRESS_8 = 0x1800
-DEFINES_8            = -DCONFIG_NO__BOOTLOADER_CAN_EXIT -DCONFIG_NO__PRECISESLEEP
+DEFINES_8            = -DCONFIG_USE__EXCESSIVE_ASSEMBLER -DCONFIG_NO__NEED_WATCHDOG -DCONFIG_NO__PRECISESLEEP
 
 
 #untested (WARNING: may destroy ISP ability!)

@@ -275,6 +275,19 @@ these macros are defined, the boot loader usees them.
  * instead the right content of the flash memory.
  */
 
+#ifdef CONFIG_USE__EXCESSIVE_ASSEMBLER
+#	define USE_EXCESSIVE_ASSEMBLER		1
+#else
+#	define USE_EXCESSIVE_ASSEMBLER		0
+#endif
+/* This macro enables large codeareas of hand-optimized assembler code.
+ * WARNING:
+ * It will only work properly on devices with <64k of flash memory and SRAM.
+ * Some configuration macros (when changed) may not be applied correctly
+ * (since their behaviour is raced within asm)!
+ * Nevertheless this feature saves lots of memory.
+ */
+
 //#define SIGNATURE_BYTES             0x1e, 0x93, 0x07, 0     /* ATMega8 */
 /* This macro defines the signature bytes returned by the emulated USBasp to
  * the programmer software. They should match the actual device at least in
@@ -298,6 +311,10 @@ these macros are defined, the boot loader usees them.
 #ifndef MCUCSR          /* compatibility between ATMega8 and ATMega88 */
 #   define MCUCSR   MCUSR
 #endif
+
+/* WARNING:
+ * following commands and macros may not be evaluated properly when 'USE_EXCESSIVE_ASSEMBLER"
+ */
 
 static inline void  bootLoaderInit(void)
 {
