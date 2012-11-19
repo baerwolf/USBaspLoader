@@ -35,9 +35,18 @@ BOOTLOADER_ADDRESS_8 = 0x1800
 DEFINES_8            = -DCONFIG_USE__EXCESSIVE_ASSEMBLER -DCONFIG_NO__NEED_WATCHDOG -DCONFIG_NO__PRECISESLEEP
 
 
+FUSEOPT_1284            = -U lfuse:w:0xd7:m -U hfuse:w:0xd0:m -U efuse:w:0xfc:m
+BOOTLOADER_ADDRESS_1284 = 0x1E000
+DEFINES_1284            = #-DEMPTY
+
+
+
 #untested (WARNING: may destroy ISP ability!)
 #device always should select maximum bootloader-section size
-#please mail tests-reports to matrixstorm@gmx.de:
+#please mail tests-reports to matrixstorm@gmx.de
+#
+#some features may be deactivated to fit into bootloader section
+#ATTANTION: CONFIG_NO... feature deactivation may not be optimal!
 FUSEOPT_32              = -U lfuse:w:0x1f:m -U hfuse:w:0xc0:m
 BOOTLOADER_ADDRESS_32   = 0x7000
 DEFINES_32              = #-DEMPTY
@@ -46,22 +55,22 @@ DEFINES_32              = #-DEMPTY
 
 FUSEOPT_88              = -U lfuse:w:0xd7:m -U hfuse:w:0xd4:m -U efuse:w:0xf8:m
 BOOTLOADER_ADDRESS_88   = 0x1800
-DEFINES_88              = -DCONFIG_NO__HAVE_READ_LOCK_FUSE
+DEFINES_88              = -DCONFIG_NO__FLASH_BYTE_READACCESS -DCONFIG_NO__HAVE_READ_LOCK_FUSE
 
 
 
 FUSEOPT_164             = -U lfuse:w:0xd7:m -U hfuse:w:0xd0:m -U efuse:w:0xfc:m
 BOOTLOADER_ADDRESS_164  = 0x3800
-DEFINES_164             = -DCONFIG_NO__HAVE_READ_LOCK_FUSE -DCONFIG_NO__BOOTLOADER_CAN_EXIT
+DEFINES_164             = -DCONFIG_NO__FLASH_BYTE_READACCESS -DCONFIG_NO__HAVE_READ_LOCK_FUSE -DCONFIG_NO__BOOTLOADER_CAN_EXIT
 
 
 
 FUSEOPT_168             = $(FUSEOPT_88)
 BOOTLOADER_ADDRESS_168  = 0x3800
 ifeq ($(DANGEROUS), 1)
-DEFINES_168             = -DCONFIG_NO__HAVE_READ_LOCK_FUSE -DCONFIG_NO__NEED_WATCHDOG
+DEFINES_168             = -DCONFIG_NO__FLASH_BYTE_READACCESS -DCONFIG_NO__HAVE_READ_LOCK_FUSE -DCONFIG_NO__NEED_WATCHDOG
 else
-DEFINES_168             = -DCONFIG_NO__HAVE_READ_LOCK_FUSE -DCONFIG_NO__BOOTLOADER_CAN_EXIT
+DEFINES_168             = -DCONFIG_NO__FLASH_BYTE_READACCESS -DCONFIG_NO__HAVE_READ_LOCK_FUSE -DCONFIG_NO__BOOTLOADER_CAN_EXIT
 endif
 
 
@@ -87,12 +96,6 @@ DEFINES_644             = #-DEMPTY
 FUSEOPT_128             = -U lfuse:w:0x1f:m -U hfuse:w:0xc0:m -U efuse:w:0xfd:m
 BOOTLOADER_ADDRESS_128  = 0x1E000
 DEFINES_128             = #-DEMPTY
-
-
-
-FUSEOPT_1284            = $(FUSEOPT_644)
-BOOTLOADER_ADDRESS_1284 = 0x1E000
-DEFINES_1284            = #-DEMPTY
 
 
 
