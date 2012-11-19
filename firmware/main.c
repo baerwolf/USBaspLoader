@@ -178,13 +178,13 @@ static const uchar  signatureBytes[4] = {
 
 /* ------------------------------------------------------------------------ */
 
-#if !USE_EXCESSIVE_ASSEMBLER
+#if (!USE_EXCESSIVE_ASSEMBLER) || (!(defined (__AVR_ATmega8__) || defined (__AVR_ATmega8A__) || defined (__AVR_ATmega8HVA__)))
 static void (*nullVector)(void) __attribute__((__noreturn__));
 #endif
 
 static void __attribute__((__noreturn__)) leaveBootloader()
 {
-#if USE_EXCESSIVE_ASSEMBLER
+#if (USE_EXCESSIVE_ASSEMBLER) && (defined (__AVR_ATmega8__) || defined (__AVR_ATmega8A__) || defined (__AVR_ATmega8HVA__))
 asm  volatile  (
   "cli\n\t"
   "clr		r30\n\t"
