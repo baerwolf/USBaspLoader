@@ -4,7 +4,7 @@
  * Creation Date: 2012-08-01
  * Copyright: (c) 2012 by Stephan Baerwolf
  * License: GNU GPL v2 (see License.txt)
- * Version: 0.9
+ * Version: 0.95
  */
 
 #ifndef SPMINTERFACE_H_f70ba6adf7624275947e859bdbff0599
@@ -136,6 +136,10 @@ ret
   #endif
 #endif
 
+
+#ifndef SPMEN
+#define SPMEN SELFPRGEN
+#endif
 
 /*
  * Call the "bootloader__do_spm"-function, located within the BLS via comfortable C-interface
