@@ -28,30 +28,16 @@ PROGRAMMER = -c usbasp
 #  since USBaspLoader supports HAVE_BLB11_SOFTW_LOCKBIT...
 LOCKOPT = -U lock:w:0x3f:m
 
-# standard atmega8 needs BODLEVEL to be programed, since it is a 5V device
-# you may also want to UNprogram  SUT1 to get a SLOWER bootup (lfuse then would be 0x3f)
-FUSEOPT_8            = -U lfuse:w:0x1f:m -U hfuse:w:0xc0:m
-BOOTLOADER_ADDRESS_8 = 0x1800
-DEFINES_8            = -DCONFIG_USE__EXCESSIVE_ASSEMBLER -DCONFIG_NO__NEED_WATCHDOG -DCONFIG_NO__PRECISESLEEP
-
-
-FUSEOPT_1284            = -U lfuse:w:0xd7:m -U hfuse:w:0xd0:m -U efuse:w:0xfc:m
-BOOTLOADER_ADDRESS_1284 = 0x1E000
-DEFINES_1284            = #-DEMPTY
 
 
 
-#untested (WARNING: may destroy ISP ability!)
+
+#untested devices (WARNING: may destroy ISP ability!)
 #device always should select maximum bootloader-section size
 #please mail tests-reports to matrixstorm@gmx.de
 #
 #some features may be deactivated to fit into bootloader section
 #ATTANTION: CONFIG_NO... feature deactivation may not be optimal!
-FUSEOPT_32              = -U lfuse:w:0x1f:m -U hfuse:w:0xc0:m
-BOOTLOADER_ADDRESS_32   = 0x7000
-DEFINES_32              = #-DEMPTY
-
-
 
 FUSEOPT_88              = -U lfuse:w:0xd7:m -U hfuse:w:0xd4:m -U efuse:w:0xf8:m
 BOOTLOADER_ADDRESS_88   = 0x1800
@@ -65,6 +51,35 @@ DEFINES_164             = -DCONFIG_NO__FLASH_BYTE_READACCESS -DCONFIG_NO__HAVE_R
 
 
 
+FUSEOPT_324             = $(FUSEOPT_164)
+BOOTLOADER_ADDRESS_324  = 0x7000
+DEFINES_324             = #-DEMPTY
+
+
+
+FUSEOPT_128             = -U lfuse:w:0x1f:m -U hfuse:w:0xc0:m -U efuse:w:0xfd:m
+BOOTLOADER_ADDRESS_128  = 0x1E000
+DEFINES_128             = #-DEMPTY
+
+
+
+
+#tested devices
+
+# standard atmega8 needs BODLEVEL to be programed, since it is a 5V device
+# you may also want to UNprogram  SUT1 to get a SLOWER bootup (lfuse then would be 0x3f)
+FUSEOPT_8            = -U lfuse:w:0x1f:m -U hfuse:w:0xc0:m
+BOOTLOADER_ADDRESS_8 = 0x1800
+DEFINES_8            = -DCONFIG_USE__EXCESSIVE_ASSEMBLER -DCONFIG_NO__NEED_WATCHDOG -DCONFIG_NO__PRECISESLEEP
+
+
+
+FUSEOPT_32              = -U lfuse:w:0x1f:m -U hfuse:w:0xc0:m
+BOOTLOADER_ADDRESS_32   = 0x7000
+DEFINES_32              = #-DEMPTY
+
+
+
 FUSEOPT_168             = $(FUSEOPT_88)
 BOOTLOADER_ADDRESS_168  = 0x3800
 ifeq ($(DANGEROUS), 1)
@@ -75,13 +90,7 @@ endif
 
 
 
-FUSEOPT_324             = $(FUSEOPT_164)
-BOOTLOADER_ADDRESS_324  = 0x7000
-DEFINES_324             = #-DEMPTY
-
-
-
-FUSEOPT_328             = -U lfuse:w:0xd7:m -U hfuse:w:0xd0:m -U efuse:w:0xfc:m
+FUSEOPT_328             = -U lfuse:w:0xd7:m -U hfuse:w:0xd0:m -U efuse:w:0x04:m
 BOOTLOADER_ADDRESS_328  = 0x7000
 DEFINES_328             = #-DEMPTY
 
@@ -93,9 +102,9 @@ DEFINES_644             = #-DEMPTY
 
 
 
-FUSEOPT_128             = -U lfuse:w:0x1f:m -U hfuse:w:0xc0:m -U efuse:w:0xfd:m
-BOOTLOADER_ADDRESS_128  = 0x1E000
-DEFINES_128             = #-DEMPTY
+FUSEOPT_1284            = -U lfuse:w:0xd7:m -U hfuse:w:0xd0:m -U efuse:w:0xfc:m
+BOOTLOADER_ADDRESS_1284 = 0x1E000
+DEFINES_1284            = #-DEMPTY
 
 
 
