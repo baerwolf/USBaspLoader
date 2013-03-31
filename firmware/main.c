@@ -3,11 +3,10 @@
  * Author: Christian Starkjohann
  * Author: Stephan Baerwolf
  * Creation Date: 2007-12-08
- * Modification Date: 2012-11-10
+ * Modification Date: 2013-03-31
  * Tabsize: 4
  * Copyright: (c) 2007 by OBJECTIVE DEVELOPMENT Software GmbH
  * License: GNU GPL v2 (see License.txt)
- * This Revision: $Id: main.c 786 2010-05-30 20:41:40Z cs $
  */
 
 #include "spminterface.h"  /* must be included as first! */

@@ -24,7 +24,7 @@ Readme.txt ........ The file you are currently reading.
 firmware .......... Source code of the controller firmware.
 firmware/usbdrv ... USB driver -- See Readme.txt in that directory for info
 License.txt ....... Public license (GPL2) for all contents of this project.
-Changelog.txt ..... Logfile documenting changes in soft-, firm- and hardware.
+
 Schematics.txt .... File giving infos about default and recommended hw-layout.
 
 
@@ -103,7 +103,10 @@ MORE INFORMATION
 ================
 For questions, reports, suggestions or just for fun please contact
 Stephan Baerwolf (matrixstorm@gmx.de) and/or visit demonstration-board
-for USBaspLoader at http://matrixstorm.com/avr/tinyusbboard/
+for USBaspLoader at
+
+    http://matrixstorm.com/avr/tinyusbboard/
+
 
 For more information about Objective Development's firmware-only USB driver
 for Atmel's AVR microcontrollers please visit the URL
@@ -116,7 +119,7 @@ file "firmware/usbdrv/usbdrv.h".
 
 --
 recent version:
-(c) 2012 by Stephan Baerwolf
+(c) 2013 by Stephan Baerwolf
 matrixstorm@gmx.de
 
 initial version:

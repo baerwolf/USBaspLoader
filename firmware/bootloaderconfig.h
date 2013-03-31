@@ -3,11 +3,10 @@
  * Author: Christian Starkjohann
  * Author: Stephan Baerwolf
  * Creation Date: 2007-12-08
- * Modification Date: 2012-11-10
+ * Modification Date: 2013-03-31
  * Tabsize: 4
  * Copyright: (c) 2007 by OBJECTIVE DEVELOPMENT Software GmbH
  * License: GNU GPL v2 (see License.txt)
- * This Revision: $Id: bootloaderconfig.h 729 2009-03-20 09:03:58Z cs $
  */
 
 #ifndef __bootloaderconfig_h_included__
@@ -57,14 +56,28 @@ these macros are defined, the boot loader usees them.
 /* This is the port where the USB bus is connected. When you configure it to
  * "B", the registers PORTB, PINB and DDRB will be used.
  */
+#ifndef USB_CFG_INTPORT_BIT
+  #if (defined(__AVR_ATmega640__) || defined(__AVR_ATmega1280__) || defined(__AVR_ATmega1281__) || defined(__AVR_ATmega2560__) || defined(__AVR_ATmega2561__))
+    #define USB_CFG_INTPORT_BIT 0
+  #else
+    #define USB_CFG_INTPORT_BIT 2
+  #endif
+#endif
+/* Not all devices have their INT0 on PD2.
+ * Since "INT0" and "USB_CFG_DPLUS_BIT" should get the same signals,
+ * map them to be ideally the same:
+ * So abstract "USB_CFG_DPLUS_BIT" to this one here.
+ */
+
 #ifndef USB_CFG_DMINUS_BIT
-  #define USB_CFG_DMINUS_BIT      6	/* old value was 4 */
+  /* This is Revision 3 and later (where PD6 and PD7 were swapped */
+  #define USB_CFG_DMINUS_BIT      7    /* Rev.2 and previous was 6 */
 #endif
 /* This is the bit number in USB_CFG_IOPORT where the USB D- line is connected.
  * This may be any bit in the port.
  */
 #ifndef USB_CFG_DPLUS_BIT
-  #define USB_CFG_DPLUS_BIT       2
+  #define USB_CFG_DPLUS_BIT       USB_CFG_INTPORT_BIT
 #endif
 /* This is the bit number in USB_CFG_IOPORT where the USB D+ line is connected.
  * This may be any bit in the port. Please note that D+ must also be connected
@@ -77,7 +90,8 @@ these macros are defined, the boot loader usees them.
  * jumper is connected to this port
  */
 #ifndef JUMPER_BIT
-  #define JUMPER_BIT		7	/* old value was 0 */
+  /* This is Revision 3 and later (where PD6 and PD7 were swapped */
+  #define JUMPER_BIT           6       /* Rev.2 and previous was 7 */
 #endif
 /* 
  * jumper is connected to this bit in port "JUMPER_PORT", active low

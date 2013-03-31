@@ -2,9 +2,9 @@
  * Project: USBaspLoader
  * Author: Stephan Baerwolf
  * Creation Date: 2012-08-01
- * Copyright: (c) 2012 by Stephan Baerwolf
+ * Copyright: (c) 2013 by Stephan Baerwolf
  * License: GNU GPL v2 (see License.txt)
- * Version: 0.95
+ * Version: 0.96
  */
 
 #ifndef SPMINTERFACE_H_f70ba6adf7624275947e859bdbff0599
