@@ -288,6 +288,16 @@ these macros are defined, the boot loader usees them.
  * Nevertheless this feature saves lots of memory.
  */
 
+#ifdef CONFIG_USE__BOOTUP_CLEARRAM
+#	define USE_BOOTUP_CLEARRAM		1
+#else
+#	define USE_BOOTUP_CLEARRAM		0
+#endif
+/* This macro enables some (init3) code, executed at bootup.
+ * This codefragment will safely overwrite the whole SRAM with "0"
+ * (except registers and IO), since RESET will NOT clear old RAM content.
+ */
+
 //#define SIGNATURE_BYTES             0x1e, 0x93, 0x07, 0     /* ATMega8 */
 /* This macro defines the signature bytes returned by the emulated USBasp to
  * the programmer software. They should match the actual device at least in

@@ -178,6 +178,32 @@ static const uchar  signatureBytes[4] = {
 
 /* ------------------------------------------------------------------------ */
 
+#if (USE_BOOTUP_CLEARRAM)
+/*
+* Under normal circumstances, RESET will not clear contents of RAM.
+* As always, if you want it done - do it yourself...
+*/
+void __attribute__ ((naked)) __attribute__ ((section (".init3"))) __clearram(void);
+void __clearram(void) {
+  extern size_t __bss_end;
+  asm volatile (
+    "__clearram:\n\t"
+    "ldi r29, %[ramendhi]\n\t"
+    "ldi r28, %[ramendlo]\n\t"
+    "__clearramloop%=:\n\t"
+    "st -Y , __zero_reg__\n\t"
+    "cp r28, %A[bssend]\n\t"
+    "cpc r29, %B[bssend]\n\t"
+    "brne __clearramloop%=\n\t"
+    :
+    : [ramendhi] "M" (((RAMEND+1)>>8) & 0xff),
+      [ramendlo] "M" (((RAMEND+1)>>0) & 0xff),
+      [bssend] "r" (&__bss_end)
+    : "memory"
+      );
+}
+#endif
+
 #if (!USE_EXCESSIVE_ASSEMBLER) || (!(defined (__AVR_ATmega8__) || defined (__AVR_ATmega8A__) || defined (__AVR_ATmega8HVA__)))
 static void (*nullVector)(void) __attribute__((__noreturn__));
 #endif
