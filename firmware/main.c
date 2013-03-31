@@ -644,6 +644,15 @@ int __attribute__((__noreturn__)) main(void)
 #endif
     if(bootLoaderCondition()){
 #if NEED_WATCHDOG
+#	if (defined(MCUSR) && defined(WDRF))
+	/* 
+	 * Fix issue 6: (special thanks to coldtobi)
+	 * 
+	 * The WDRF bit in the MCUSR needs to be cleared first,
+	 * otherwise it is not possible to disable the watchdog
+	 */
+	MCUSR &= ~(_BV(WDRF));
+#	endif
 	wdt_disable();    /* main app may have enabled watchdog */
 #endif
         initForUsbConnectivity();
