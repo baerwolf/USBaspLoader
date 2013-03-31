@@ -133,6 +133,13 @@ ret
     #else
       #error "unknown MCU - where is bootloader__do_spm located?"
     #endif
+
+    #if defined(_VECTORS_SIZE)
+      #if (funcaddr___bootloader__do_spm != (BOOTLOADER_ADDRESS+_VECTORS_SIZE))
+	#error "bootloader__do_spm is not located after interrupts - sth. is very wrong here!" 
+      #endif
+    #endif  
+
   #endif
 #endif
 
