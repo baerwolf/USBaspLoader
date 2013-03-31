@@ -260,7 +260,16 @@ asm  volatile  (
     USB_INTR_CFG = 0;       /* also reset config bits */
     GICR = (1 << IVCE);     /* enable change of interrupt vectors */
     GICR = (0 << IVSEL);    /* move interrupts to application flash section */
-    
+
+/*
+ * There seems to be another funny compiler Bug.
+ * When gcc is using "eicall" opcode it forgets to modify EIND.
+ * On devices with large flash memory there are some target address bits
+ * missing. In this case some zero bits...
+ */
+#if (defined(EIND) && ((FLASHEND)>131071))
+  EIND=0;
+#endif
 /* We must go through a global function pointer variable instead of writing
  *  ((void (*)(void))0)();
  * because the compiler optimizes a constant 0 to "rcall 0" which is not
