@@ -39,6 +39,12 @@ LOCKOPT = -U lock:w:0x3f:m
 #some features may be deactivated to fit into bootloader section
 #ATTANTION: CONFIG_NO... feature deactivation may not be optimal!
 
+FUSEOPT_16              = -U lfuse:w:0x1f:m -U hfuse:w:0xc0:m
+BOOTLOADER_ADDRESS_16   = 0x3800
+DEFINES_16              = -DCONFIG_USE__EXCESSIVE_ASSEMBLER -DCONFIG_NO__NEED_WATCHDOG -DCONFIG_NO__PRECISESLEEP
+
+
+
 FUSEOPT_88              = -U lfuse:w:0xd7:m -U hfuse:w:0xd4:m -U efuse:w:0xf8:m
 BOOTLOADER_ADDRESS_88   = 0x1800
 DEFINES_88              = -DCONFIG_NO__FLASH_BYTE_READACCESS -DCONFIG_NO__HAVE_READ_LOCK_FUSE
@@ -74,7 +80,7 @@ DEFINES_8            = -DCONFIG_USE__EXCESSIVE_ASSEMBLER -DCONFIG_NO__NEED_WATCH
 
 
 
-FUSEOPT_32              = -U lfuse:w:0x1f:m -U hfuse:w:0xc0:m
+FUSEOPT_32              = $(FUSEOPT_16)
 BOOTLOADER_ADDRESS_32   = 0x7000
 DEFINES_32              = #-DEMPTY
 
@@ -118,6 +124,11 @@ ifeq ($(DEVICE), atmega8)
   BOOTLOADER_ADDRESS = $(BOOTLOADER_ADDRESS_8) 
   MCUARCH            = avr4
   DEFINES	     += $(DEFINES_8)
+else ifeq ($(DEVICE), atmega16)
+  FUSEOPT            = $(FUSEOPT_16)
+  BOOTLOADER_ADDRESS = $(BOOTLOADER_ADDRESS_16)
+  MCUARCH            = avr5
+  DEFINES	     += $(DEFINES_16)
 else ifeq ($(DEVICE), atmega32)
   FUSEOPT            = $(FUSEOPT_32)
   BOOTLOADER_ADDRESS = $(BOOTLOADER_ADDRESS_32)
