@@ -40,16 +40,31 @@ all: main.hex
 	$(CC) $(CFLAGS) -S $< -o $@
 
 flash:	all
+	$(ECHO) "."
 	$(AVRDUDE) -U flash:w:main.hex:i
+	$(ECHO) "."
+	$(ECHO) "."
 
 readflash:
+	$(ECHO) "."
 	$(AVRDUDE) -U flash:r:read.hex:i
+	$(ECHO) "."
+	$(ECHO) "."
+
 
 fuse:
+	$(ECHO) "."
 	$(AVRDUDE) $(FUSEOPT)
+	$(ECHO) "."
+	$(ECHO) "."
+
 
 lock:
+	$(ECHO) "."
 	$(AVRDUDE) $(LOCKOPT)
+	$(ECHO) "."
+	$(ECHO) "."
+
 
 read_fuses:
 	$(UISP) --rd_fuses

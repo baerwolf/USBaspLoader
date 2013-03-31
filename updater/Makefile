@@ -36,6 +36,13 @@ endif
 
 all:  updater.hex
 
+flash:	all
+	$(ECHO) "."
+	$(AVRDUDE) -D -U flash:w:updater.hex:i
+	$(ECHO) "."
+	$(ECHO) "."
+
+
 ../firmware/main.bin:
 	$(MAKE) -C ../firmware main.hex
 
@@ -60,9 +67,6 @@ updater.hex: updater.elf
 	$(ECHO) "."
 	$(SIZ) updater.elf
 	$(ECHO) "."
-	$(AVRDUDE) -D -U flash:w:updater.hex:i
-	$(ECHO) "."
-
 
 deepclean: clean
 	$(RM) *~

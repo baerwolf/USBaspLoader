@@ -10,6 +10,15 @@ include Makefile.inc
 
 all: do_firmware do_updater
 
+flash:	firmware
+	$(MAKE) -C firmware flash
+fuse:	firmware
+	$(MAKE) -C firmware fuse
+lock:	firmware
+	$(MAKE) -C firmware lock
+update:	updater
+	$(MAKE) -C updater flash
+
 firmware: do_firmware
 updater: do_updater
 
@@ -20,7 +29,7 @@ do_firmware:
 	$(ECHO) "."
 	$(MAKE) -C firmware all
 
-do_updater:
+do_updater: firmware
 	$(ECHO) "."
 	$(ECHO) "."
 	$(ECHO) "======>BUILDING BOOTLOADER UPDATER (EXPERIMENTAL)"
