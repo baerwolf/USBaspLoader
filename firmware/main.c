@@ -369,7 +369,7 @@ usbRequest_t    *rq = (void *)data;
 uchar           len = 0;
 static uchar    replyBuffer[4];
 
-    usbMsgPtr = replyBuffer;
+    usbMsgPtr = (usbMsgPtr_t)replyBuffer;
     if(rq->bRequest == USBASP_FUNC_TRANSMIT){   /* emulate parts of ISP protocol */
         replyBuffer[3] = usbFunctionSetup_USBASP_FUNC_TRANSMIT(rq);
         len = 4;
