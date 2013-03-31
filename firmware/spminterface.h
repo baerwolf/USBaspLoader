@@ -126,12 +126,22 @@ ret
       #define  funcaddr___bootloader__do_spm 0x707c
     #elif defined (__AVR_ATmega328__) || defined (__AVR_ATmega328P__)
       #define  funcaddr___bootloader__do_spm 0x7068
+    #elif defined (__AVR_ATmega640__)
+      #define  funcaddr___bootloader__do_spm 0xe0e4
     #elif defined (__AVR_ATmega644__) || defined (__AVR_ATmega644A__) || defined (__AVR_ATmega644P__) || defined (__AVR_ATmega644PA__)
       #define  funcaddr___bootloader__do_spm 0xe07c
     #elif defined (__AVR_ATmega128__)
       #define  funcaddr___bootloader__do_spm 0x1e08c
+    #elif defined (__AVR_ATmega1280__)
+      #define  funcaddr___bootloader__do_spm 0x1e0e4
+    #elif defined (__AVR_ATmega1281__)
+      #define  funcaddr___bootloader__do_spm 0x1e0e4
     #elif defined (__AVR_ATmega1284__) || defined (__AVR_ATmega1284P__)
       #define  funcaddr___bootloader__do_spm 0x1e08c
+    #elif defined (__AVR_ATmega2560__)
+      #define  funcaddr___bootloader__do_spm 0x3e0e4
+    #elif defined (__AVR_ATmega2561__)
+      #define  funcaddr___bootloader__do_spm 0x3e0e4
     #else
       #error "unknown MCU - where is bootloader__do_spm located?"
     #endif
@@ -526,7 +536,7 @@ const uint16_t bootloader__do_spm[20] BOOTLIBLINK = {
 
 
 
-#elif defined (__AVR_ATmega164A__) || defined (__AVR_ATmega164P__) || defined (__AVR_ATmega164PA__) || defined (__AVR_ATmega324A__) || defined (__AVR_ATmega324P__) || defined (__AVR_ATmega324PA__) || defined (__AVR_ATmega644__) || defined (__AVR_ATmega644A__) || defined (__AVR_ATmega644P__) || defined (__AVR_ATmega644PA__) || defined (__AVR_ATmega1284__) || defined (__AVR_ATmega1284P__)
+#elif defined (__AVR_ATmega164A__) || defined (__AVR_ATmega164P__) || defined (__AVR_ATmega164PA__) || defined (__AVR_ATmega324A__) || defined (__AVR_ATmega324P__) || defined (__AVR_ATmega324PA__) || defined (__AVR_ATmega640__) || defined (__AVR_ATmega644__) || defined (__AVR_ATmega644A__) || defined (__AVR_ATmega644P__) || defined (__AVR_ATmega644PA__) || defined (__AVR_ATmega1280__) || defined (__AVR_ATmega1281__) || defined (__AVR_ATmega1284__) || defined (__AVR_ATmega1284P__) || defined (__AVR_ATmega2560__) || defined (__AVR_ATmega2561__)
 
 #if defined (__AVR_ATmega164A__) || defined (__AVR_ATmega164P__) || defined (__AVR_ATmega164PA__)
   #if (BOOTLOADER_ADDRESS != 0x3800)
@@ -536,13 +546,33 @@ const uint16_t bootloader__do_spm[20] BOOTLIBLINK = {
   #if (BOOTLOADER_ADDRESS != 0x7000)
     #error BOOTLOADER_ADDRESS!=0x7000, on current MCU "funcaddr___bootloader__do_spm" might be currupted - please edit spminterface.h for nonstandard use
   #endif
+#elif defined (__AVR_ATmega640__)
+  #if (BOOTLOADER_ADDRESS != 0xE000)
+    #error BOOTLOADER_ADDRESS!=0xE000, on current MCU "funcaddr___bootloader__do_spm" might be currupted - please edit spminterface.h for nonstandard use
+  #endif
 #elif defined (__AVR_ATmega644__) || defined (__AVR_ATmega644A__) || defined (__AVR_ATmega644P__) || defined (__AVR_ATmega644PA__)
   #if (BOOTLOADER_ADDRESS != 0xE000)
     #error BOOTLOADER_ADDRESS!=0xE000, on current MCU "funcaddr___bootloader__do_spm" might be currupted - please edit spminterface.h for nonstandard use
   #endif
+#elif defined (__AVR_ATmega1280__)
+  #if (BOOTLOADER_ADDRESS != 0x1E000)
+    #error BOOTLOADER_ADDRESS!=0x1E000, on current MCU "funcaddr___bootloader__do_spm" might be currupted - please edit spminterface.h for nonstandard use
+  #endif
+#elif defined (__AVR_ATmega1281__)
+  #if (BOOTLOADER_ADDRESS != 0x1E000)
+    #error BOOTLOADER_ADDRESS!=0x1E000, on current MCU "funcaddr___bootloader__do_spm" might be currupted - please edit spminterface.h for nonstandard use
+  #endif
 #elif defined (__AVR_ATmega1284__) || defined (__AVR_ATmega1284P__)
   #if (BOOTLOADER_ADDRESS != 0x1E000)
     #error BOOTLOADER_ADDRESS!=0x1E000, on current MCU "funcaddr___bootloader__do_spm" might be currupted - please edit spminterface.h for nonstandard use
+  #endif
+#elif defined (__AVR_ATmega2560__)
+  #if (BOOTLOADER_ADDRESS != 0x3E000)
+    #error BOOTLOADER_ADDRESS!=0x3E000, on current MCU "funcaddr___bootloader__do_spm" might be currupted - please edit spminterface.h for nonstandard use
+  #endif
+#elif defined (__AVR_ATmega2561__)
+  #if (BOOTLOADER_ADDRESS != 0x3E000)
+    #error BOOTLOADER_ADDRESS!=0x3E000, on current MCU "funcaddr___bootloader__do_spm" might be currupted - please edit spminterface.h for nonstandard use
   #endif
 #else
   #error undefined device selection - this should not happen! 

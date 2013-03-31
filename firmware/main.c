@@ -163,18 +163,33 @@ static const uchar  signatureBytes[4] = {
     0x1e, 0x95, 0x14, 0
 #elif defined (__AVR_ATmega328P__)
     0x1e, 0x95, 0x0f, 0
+#elif defined (__AVR_ATmega640__)
+    0x1e, 0x96, 0x08, 0
 #elif defined (__AVR_ATmega644__) || defined (__AVR_ATmega644A__)
     0x1e, 0x96, 0x09, 0
 #elif defined (__AVR_ATmega644P__) || defined (__AVR_ATmega644PA__)
     0x1e, 0x96, 0x0a, 0
 #elif defined (__AVR_ATmega128__)
     0x1e, 0x97, 0x02, 0
+#elif defined (__AVR_ATmega1280__)
+    0x1e, 0x97, 0x03, 0
+#elif defined (__AVR_ATmega1281__)
+    0x1e, 0x97, 0x04, 0
 #elif defined (__AVR_ATmega1284__)
     0x1e, 0x97, 0x06, 0
 #elif defined (__AVR_ATmega1284P__)
     0x1e, 0x97, 0x05, 0
+#elif defined (__AVR_ATmega2560__)
+    0x1e, 0x98, 0x01, 0
+#elif defined (__AVR_ATmega2561__)
+    0x1e, 0x98, 0x02, 0
 #else
-#   error "Device signature is not known, please edit main.c!"
+#   if (defined(SIGNATURE_0) && defined(SIGNATURE_1) && defined(SIGNATURE_2))
+#     warning "Device signature is not known - using AVR Libc suggestion..."
+    SIGNATURE_0, SIGNATURE_1, SIGNATURE_2, 0
+#   else
+#     error "Device signature is not known, please edit main.c!"
+#   endif
 #endif
 };
 
@@ -282,9 +297,14 @@ defined (__AVR_ATmega164A__) || defined (__AVR_ATmega164P__)  || 								      \
 defined (__AVR_ATmega168__)  || defined (__AVR_ATmega168A__)  || defined (__AVR_ATmega168P__)  || defined (__AVR_ATmega168PA__) ||  \
 defined (__AVR_ATmega324A__) || defined (__AVR_ATmega324P__)  ||								      \
 defined (__AVR_ATmega328__)  || defined (__AVR_ATmega328P__)  ||								      \
+defined (__AVR_ATmega640__)  ||													\
 defined (__AVR_ATmega644__)  || defined (__AVR_ATmega644A__)  || defined (__AVR_ATmega644P__) || defined (__AVR_ATmega644PA__)  ||  \
 defined (__AVR_ATmega128__)  ||													      \
-defined (__AVR_ATmega1284__) || defined (__AVR_ATmega1284P__)
+defined (__AVR_ATmega1280__) ||													\
+defined (__AVR_ATmega1281__) ||													\
+defined (__AVR_ATmega1284__) || defined (__AVR_ATmega1284P__)  ||													\
+defined (__AVR_ATmega2560__) ||													\
+defined (__AVR_ATmega2561__)
   }else if(rq->wValue.bytes[0] == 0x58 && rq->wValue.bytes[1] == 0x00){  /* read lock bits */
       rval = boot_lock_fuse_bits_get(GET_LOCK_BITS);
   }else if(rq->wValue.bytes[0] == 0x50 && rq->wValue.bytes[1] == 0x00){  /* read lfuse bits */

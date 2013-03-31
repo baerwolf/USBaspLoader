@@ -69,6 +69,36 @@ DEFINES_128             = #-DEMPTY
 
 
 
+FUSEOPT_640             = -U lfuse:w:0xd7:m -U hfuse:w:0xd0:m -U efuse:w:0xfc:m
+BOOTLOADER_ADDRESS_640  = 0xE000
+DEFINES_640             = #-DEMPTY
+
+
+
+FUSEOPT_1280             = $(FUSEOPT_640)
+BOOTLOADER_ADDRESS_1280  = 0x1E000
+DEFINES_1280             = #-DEMPTY
+
+
+
+FUSEOPT_1281             = $(FUSEOPT_1280)
+BOOTLOADER_ADDRESS_1281  = 0x1E000
+DEFINES_1281             = #-DEMPTY
+
+
+
+FUSEOPT_2560             = $(FUSEOPT_1280)
+BOOTLOADER_ADDRESS_2560  = 0x3E000
+DEFINES_2560             = #-DEMPTY
+
+
+
+FUSEOPT_2561             = $(FUSEOPT_1281)
+BOOTLOADER_ADDRESS_2561  = 0x3E000
+DEFINES_2561             = #-DEMPTY
+
+
+
 
 #tested devices
 
@@ -117,7 +147,7 @@ DEFINES_1284            = #-DEMPTY
 
 
 
-
+#http://www.nongnu.org/avr-libc/user-manual/using_tools.html
 #autoselect logic
 ifeq ($(DEVICE), atmega8)
   FUSEOPT            = $(FUSEOPT_8)
@@ -214,6 +244,11 @@ else ifeq ($(DEVICE), atmega328p)
   BOOTLOADER_ADDRESS = $(BOOTLOADER_ADDRESS_328)
   MCUARCH            = avr5
   DEFINES	     += $(DEFINES_328)
+else ifeq ($(DEVICE), atmega640)
+  FUSEOPT            = $(FUSEOPT_640)
+  BOOTLOADER_ADDRESS = $(BOOTLOADER_ADDRESS_640)
+  MCUARCH            = avr5
+  DEFINES	     += $(DEFINES_640)
 else ifeq ($(DEVICE), atmega644)
   FUSEOPT            = $(FUSEOPT_644)
   BOOTLOADER_ADDRESS = $(BOOTLOADER_ADDRESS_644)
@@ -239,6 +274,16 @@ else ifeq ($(DEVICE), atmega128)
   BOOTLOADER_ADDRESS = $(BOOTLOADER_ADDRESS_128)
   MCUARCH            = avr51
   DEFINES	     += $(DEFINES_128)
+else ifeq ($(DEVICE), atmega1280)
+  FUSEOPT            = $(FUSEOPT_1280)
+  BOOTLOADER_ADDRESS = $(BOOTLOADER_ADDRESS_1280)
+  MCUARCH            = avr51
+  DEFINES	     += $(DEFINES_1280)
+else ifeq ($(DEVICE), atmega1281)
+  FUSEOPT            = $(FUSEOPT_1281)
+  BOOTLOADER_ADDRESS = $(BOOTLOADER_ADDRESS_1281)
+  MCUARCH            = avr51
+  DEFINES	     += $(DEFINES_1281)
 else ifeq ($(DEVICE), atmega1284)
   FUSEOPT            = $(FUSEOPT_1284)
   BOOTLOADER_ADDRESS = $(BOOTLOADER_ADDRESS_1284)
@@ -249,6 +294,16 @@ else ifeq ($(DEVICE), atmega1284p)
   BOOTLOADER_ADDRESS = $(BOOTLOADER_ADDRESS_1284)
   MCUARCH            = avr51
   DEFINES	     += $(DEFINES_1284)
+else ifeq ($(DEVICE), atmega2560)
+  FUSEOPT            = $(FUSEOPT_2560)
+  BOOTLOADER_ADDRESS = $(BOOTLOADER_ADDRESS_2560)
+  MCUARCH            = avr6
+  DEFINES	     += $(DEFINES_2560)
+else ifeq ($(DEVICE), atmega2561)
+  FUSEOPT            = $(FUSEOPT_2561)
+  BOOTLOADER_ADDRESS = $(BOOTLOADER_ADDRESS_2561)
+  MCUARCH            = avr6
+  DEFINES	     += $(DEFINES_2561)
 else
   FUSEOPT = unknown
 endif
