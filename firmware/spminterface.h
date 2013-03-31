@@ -178,104 +178,234 @@ ret
 #else
 #define __do_spm_Ex	__do_spm_Ex_
 #endif
+
+#if (defined(EIND) && ((FLASHEND)>131071))
+  /*
+  * Huge flash version using eicall (and EIND)
+  */
+  #define __do_spm_Ex_(flash_wordaddress, spmcrval, dataword, ___bootloader__do_spm__ptr)		\
+  ({													\
+      asm volatile (											\
+      "push r0\n\t"  											\
+      "push r1\n\t"  											\
+													\
+      "mov r13, %B[flashaddress]\n\t"									\
+      "mov r12, %A[flashaddress]\n\t"									\
+      "mov r11, %C[flashaddress]\n\t"									\
+													\
+      /* prepare the EIND for following eicall */							\
+      "in r18, %[eind]\n\t"										\
+      "push r18\n\t"  											\
+      "ldi r18, %[spmfuncaddrEIND]\n\t"								\
+      "out %[eind], r18\n\t"										\
+													\
+      /* also load the spmcrval */									\
+      "mov r18, %[spmcrval]\n\t"									\
+													\
+													\
+      "mov r1, %B[data]\n\t"										\
+      "mov r0, %A[data]\n\t"										\
+													\
+      /* finally call the bootloader-function */							\
+      "eicall\n\t"											\
+      "pop r1\n\t"  											\
+      "out %[eind], r1\n\t"										\
+													\
+      /*												\
+      * bootloader__do_spm should change spmcrval (r18) to						\
+      * "((1<<RWWSRE) | (1<<SPMEN))" in case of success						\
+      */												\
+      "cpi r18, %[spmret]\n\t"										\
+      /* loop infitinte if not so, most likely we called an bootloader__do_spm			\
+	* with wrong magic! To avoid calls to wrong initialized pages, better crash here...		\
+	*/												\
+  "loop%=: \n\t"											\
+      "brne loop%= \n\t"										\
+													\
+      "pop  r1\n\t"  											\
+      "pop  r0\n\t"  											\
+													\
+      :													\
+      : [flashaddress]		"r" (flash_wordaddress),						\
+	[spmfunctionaddress]	"z" ((uint16_t)(___bootloader__do_spm__ptr)),				\
+	[spmfuncaddrEIND]	"M" ((uint8_t)(___bootloader__do_spm__ptr>>16)),			\
+	[eind]			"I" (_SFR_IO_ADDR(EIND)),						\
+	[spmcrval]		"r" (spmcrval),								\
+	[data]			"r" (dataword),								\
+	[spmret]		"M" ((1<<RWWSRE) | (1<<SPMEN))						\
+      : "r0","r1","r11","r12","r13","r18"								\
+      );												\
+  })
+
+  #define __do_spm_Ex_magic(flash_wordaddress, spmcrval, dataword, ___bootloader__do_spm__ptr)	\
+  ({													\
+      asm volatile (											\
+      "push r0\n\t"  											\
+      "push r1\n\t"  											\
+													\
+      "ldi r23, %[magicD] \n\t"									\
+      "ldi r22, %[magicC] \n\t"									\
+      "ldi r21, %[magicB] \n\t"									\
+      "ldi r20, %[magicA] \n\t"									\
+													\
+      "mov r13, %B[flashaddress]\n\t"									\
+      "mov r12, %A[flashaddress]\n\t"									\
+      "mov r11, %C[flashaddress]\n\t"									\
+													\
+      /* prepare the EIND for following eicall */							\
+      "in r18, %[eind]\n\t"										\
+      "push r18\n\t"  											\
+      "ldi r18, %[spmfuncaddrEIND]\n\t"								\
+      "out %[eind], r18\n\t"										\
+													\
+      /* also load the spmcrval */									\
+      "mov r18, %[spmcrval]\n\t"									\
+													\
+													\
+      "mov r1, %B[data]\n\t"										\
+      "mov r0, %A[data]\n\t"										\
+													\
+      /* finally call the bootloader-function */							\
+      "eicall\n\t"											\
+      "pop r1\n\t"  											\
+      "out %[eind], r1\n\t"										\
+													\
+      /*												\
+      * bootloader__do_spm should change spmcrval (r18) to						\
+      * "((1<<RWWSRE) | (1<<SPMEN))" in case of success						\
+      */												\
+      "cpi r18, %[spmret]\n\t"										\
+      /* loop infitinte if not so, most likely we called an bootloader__do_spm			\
+	* with wrong magic! To avoid calls to wrong initialized pages, better crash here...		\
+	*/												\
+  "loop%=: \n\t"											\
+      "brne loop%= \n\t"										\
+													\
+      "pop  r1\n\t"  											\
+      "pop  r0\n\t"  											\
+													\
+      :													\
+      : [flashaddress] "r" (flash_wordaddress),							\
+	[spmfunctionaddress] "z" ((uint16_t)(___bootloader__do_spm__ptr)),				\
+	[spmfuncaddrEIND]	"M" ((uint8_t)(___bootloader__do_spm__ptr>>16)),			\
+	[eind]			"I" (_SFR_IO_ADDR(EIND)),						\
+	[spmcrval] "r" (spmcrval),									\
+	[data] "r" (dataword),										\
+	[spmret] "M" ((1<<RWWSRE) | (1<<SPMEN)),							\
+	[magicD] "M" ((HAVE_SPMINTEREFACE_MAGICVALUE>>24)&0xff),					\
+	[magicC] "M" ((HAVE_SPMINTEREFACE_MAGICVALUE>>16)&0xff),					\
+	[magicB] "M" ((HAVE_SPMINTEREFACE_MAGICVALUE>> 8)&0xff),					\
+	[magicA] "M" ((HAVE_SPMINTEREFACE_MAGICVALUE>> 0)&0xff)					\
+      : "r0","r1","r11","r12","r13","r18","r20","r21","r22","r23"					\
+      );												\
+  })
+
+
+#else
+  /*
+  * Normal version for devices with <=128KiB flash (using icall)
+  */
+  #if ((FLASHEND)>131071)
+    #error "Using inappropriate code for device with more than 128kib flash"
+  #endif
   
-#define __do_spm_Ex_(flash_wordaddress, spmcrval, dataword, ___bootloader__do_spm__ptr)	\
-({												\
-    asm volatile (										\
-    "push r0\n\t"  										\
-    "push r1\n\t"  										\
-												\
-    "mov r13, %B[flashaddress]\n\t"								\
-    "mov r12, %A[flashaddress]\n\t"								\
-    "mov r11, %C[flashaddress]\n\t"								\
-												\
-    /* also load the spmcrval */								\
-    "mov r18, %[spmcrval]\n\t"									\
-												\
-												\
-    "mov r1, %B[data]\n\t"									\
-    "mov r0, %A[data]\n\t"									\
-												\
-    /* finally call the bootloader-function */							\
-    "icall\n\t"											\
-												\
-    /*												\
-     * bootloader__do_spm should change spmcrval (r18) to					\
-     * "((1<<RWWSRE) | (1<<SPMEN))" in case of success						\
-     */												\
-    "cpi r18, %[spmret]\n\t"									\
-     /* loop infitinte if not so, most likely we called an bootloader__do_spm			\
-      * with wrong magic! To avoid calls to wrong initialized pages, better crash here...    \
-      */											\
-"loop%=: \n\t"											\
-    "brne loop%= \n\t"										\
-												\
-    "pop  r1\n\t"  										\
-    "pop  r0\n\t"  										\
-												\
-    :												\
-    : [flashaddress] "r" (flash_wordaddress),							\
-      [spmfunctionaddress] "z" ((uint16_t)(___bootloader__do_spm__ptr)),			\
-      [spmcrval] "r" (spmcrval),								\
-      [data] "r" (dataword),									\
-      [spmret] "M" ((1<<RWWSRE) | (1<<SPMEN))							\
-    : "r0","r1","r11","r12","r13","r18"							\
-    );												\
-})
+  #define __do_spm_Ex_(flash_wordaddress, spmcrval, dataword, ___bootloader__do_spm__ptr)		\
+  ({													\
+      asm volatile (											\
+      "push r0\n\t"  											\
+      "push r1\n\t"  											\
+													\
+      "mov r13, %B[flashaddress]\n\t"									\
+      "mov r12, %A[flashaddress]\n\t"									\
+      "mov r11, %C[flashaddress]\n\t"									\
+													\
+      /* also load the spmcrval */									\
+      "mov r18, %[spmcrval]\n\t"									\
+													\
+													\
+      "mov r1, %B[data]\n\t"										\
+      "mov r0, %A[data]\n\t"										\
+													\
+      /* finally call the bootloader-function */							\
+      "icall\n\t"											\
+													\
+      /*												\
+      * bootloader__do_spm should change spmcrval (r18) to						\
+      * "((1<<RWWSRE) | (1<<SPMEN))" in case of success						\
+      */												\
+      "cpi r18, %[spmret]\n\t"										\
+      /* loop infitinte if not so, most likely we called an bootloader__do_spm			\
+	* with wrong magic! To avoid calls to wrong initialized pages, better crash here...		\
+	*/												\
+  "loop%=: \n\t"											\
+      "brne loop%= \n\t"										\
+													\
+      "pop  r1\n\t"  											\
+      "pop  r0\n\t"  											\
+													\
+      :													\
+      : [flashaddress] "r" (flash_wordaddress),							\
+	[spmfunctionaddress] "z" ((uint16_t)(___bootloader__do_spm__ptr)),				\
+	[spmcrval] "r" (spmcrval),									\
+	[data] "r" (dataword),										\
+	[spmret] "M" ((1<<RWWSRE) | (1<<SPMEN))							\
+      : "r0","r1","r11","r12","r13","r18"								\
+      );												\
+  })
 
-#define __do_spm_Ex_magic(flash_wordaddress, spmcrval, dataword, ___bootloader__do_spm__ptr)	\
-({												\
-    asm volatile (										\
-    "push r0\n\t"  										\
-    "push r1\n\t"  										\
-												\
-    "ldi r23, %[magicD] \n\t"									\
-    "ldi r22, %[magicC] \n\t"									\
-    "ldi r21, %[magicB] \n\t"									\
-    "ldi r20, %[magicA] \n\t"									\
-												\
-    "mov r13, %B[flashaddress]\n\t"								\
-    "mov r12, %A[flashaddress]\n\t"								\
-    "mov r11, %C[flashaddress]\n\t"								\
-												\
-    /* also load the spmcrval */								\
-    "mov r18, %[spmcrval]\n\t"									\
-												\
-												\
-    "mov r1, %B[data]\n\t"									\
-    "mov r0, %A[data]\n\t"									\
-												\
-    /* finally call the bootloader-function */							\
-    "icall\n\t"											\
-												\
-    /*												\
-     * bootloader__do_spm should change spmcrval (r18) to					\
-     * "((1<<RWWSRE) | (1<<SPMEN))" in case of success						\
-     */												\
-    "cpi r18, %[spmret]\n\t"									\
-     /* loop infitinte if not so, most likely we called an bootloader__do_spm			\
-      * with wrong magic! To avoid calls to wrong initialized pages, better crash here...    \
-      */											\
-"loop%=: \n\t"											\
-    "brne loop%= \n\t"										\
-												\
-    "pop  r1\n\t"  										\
-    "pop  r0\n\t"  										\
-												\
-    :												\
-    : [flashaddress] "r" (flash_wordaddress),							\
-      [spmfunctionaddress] "z" ((uint16_t)(___bootloader__do_spm__ptr)),			\
-      [spmcrval] "r" (spmcrval),								\
-      [data] "r" (dataword),									\
-      [spmret] "M" ((1<<RWWSRE) | (1<<SPMEN)),							\
-      [magicD] "M" ((HAVE_SPMINTEREFACE_MAGICVALUE>>24)&0xff),				\
-      [magicC] "M" ((HAVE_SPMINTEREFACE_MAGICVALUE>>16)&0xff),				\
-      [magicB] "M" ((HAVE_SPMINTEREFACE_MAGICVALUE>> 8)&0xff),				\
-      [magicA] "M" ((HAVE_SPMINTEREFACE_MAGICVALUE>> 0)&0xff)					\
-    : "r0","r1","r11","r12","r13","r18","r20","r21","r22","r23"				\
-    );												\
-})
-
+  #define __do_spm_Ex_magic(flash_wordaddress, spmcrval, dataword, ___bootloader__do_spm__ptr)	\
+  ({													\
+      asm volatile (											\
+      "push r0\n\t"  											\
+      "push r1\n\t"  											\
+													\
+      "ldi r23, %[magicD] \n\t"									\
+      "ldi r22, %[magicC] \n\t"									\
+      "ldi r21, %[magicB] \n\t"									\
+      "ldi r20, %[magicA] \n\t"									\
+													\
+      "mov r13, %B[flashaddress]\n\t"									\
+      "mov r12, %A[flashaddress]\n\t"									\
+      "mov r11, %C[flashaddress]\n\t"									\
+													\
+      /* also load the spmcrval */									\
+      "mov r18, %[spmcrval]\n\t"									\
+													\
+													\
+      "mov r1, %B[data]\n\t"										\
+      "mov r0, %A[data]\n\t"										\
+													\
+      /* finally call the bootloader-function */							\
+      "icall\n\t"											\
+													\
+      /*												\
+      * bootloader__do_spm should change spmcrval (r18) to						\
+      * "((1<<RWWSRE) | (1<<SPMEN))" in case of success						\
+      */												\
+      "cpi r18, %[spmret]\n\t"										\
+      /* loop infitinte if not so, most likely we called an bootloader__do_spm			\
+	* with wrong magic! To avoid calls to wrong initialized pages, better crash here...   	\
+	*/												\
+  "loop%=: \n\t"											\
+      "brne loop%= \n\t"										\
+													\
+      "pop  r1\n\t"  											\
+      "pop  r0\n\t"  											\
+													\
+      :													\
+      : [flashaddress] "r" (flash_wordaddress),							\
+	[spmfunctionaddress] "z" ((uint16_t)(___bootloader__do_spm__ptr)),				\
+	[spmcrval] "r" (spmcrval),									\
+	[data] "r" (dataword),										\
+	[spmret] "M" ((1<<RWWSRE) | (1<<SPMEN)),							\
+	[magicD] "M" ((HAVE_SPMINTEREFACE_MAGICVALUE>>24)&0xff),					\
+	[magicC] "M" ((HAVE_SPMINTEREFACE_MAGICVALUE>>16)&0xff),					\
+	[magicB] "M" ((HAVE_SPMINTEREFACE_MAGICVALUE>> 8)&0xff),					\
+	[magicA] "M" ((HAVE_SPMINTEREFACE_MAGICVALUE>> 0)&0xff)					\
+      : "r0","r1","r11","r12","r13","r18","r20","r21","r22","r23"					\
+      );												\
+  })
+#endif
 
 #if (!(defined(BOOTLOADER_ADDRESS))) || (defined(NEW_BOOTLOADER_ADDRESS))
 void do_spm(const uint32_t flash_byteaddress, const uint8_t spmcrval, const uint16_t dataword) {
