@@ -87,12 +87,6 @@ DEFINES_1281             = #-DEMPTY
 
 
 
-FUSEOPT_2560             = $(FUSEOPT_1280)
-BOOTLOADER_ADDRESS_2560  = 0x3E000
-DEFINES_2560             = #-DEMPTY
-
-
-
 FUSEOPT_2561             = $(FUSEOPT_1281)
 BOOTLOADER_ADDRESS_2561  = 0x3E000
 DEFINES_2561             = #-DEMPTY
@@ -141,6 +135,12 @@ DEFINES_644             = #-DEMPTY
 FUSEOPT_1284            = -U lfuse:w:0xd7:m -U hfuse:w:0xd0:m -U efuse:w:0xfc:m
 BOOTLOADER_ADDRESS_1284 = 0x1E000
 DEFINES_1284            = #-DEMPTY
+
+
+
+FUSEOPT_2560             = $(FUSEOPT_1280)
+BOOTLOADER_ADDRESS_2560  = 0x3E000
+DEFINES_2560             = #-DEMPTY
 
 
 
