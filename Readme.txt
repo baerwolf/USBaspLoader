@@ -32,22 +32,41 @@ BUILDING AND INSTALLING
 =======================
 This project can be built on Unix (Linux, FreeBSD or Mac OS X) or Windows.
 
-For all platforms, you must first describe your hardware in the file
-"firmware/bootloaderconfig.h". See the documentation in the example provided
-with this distribution for details. Then edit "firmware/Makefile" to reflect
-the target device, the device's boot loader address and fuse bit values.
+For all platforms, you must first describe your hardware and layout 
+specific parameters (PINs to use, etc...) in "firmware/bootloaderconfig.h".
+Some USB tuning is possible by modifying "firmware/usbconfig.h".
+All files provide working default settings, which can be used as an example.
+Then edit "firmware/Makefile.inc" (NOT Makefile directly!) to reflect
+the target device, and some feature set departing from the default one.
+(You also can edit "firmware/bootloaderconfig.h" to change feature set
+and therefore memory space requirements).
+Since now "Makefile.inc" has an automatic selection logic based on
+the type of the microcontroller, there is NO need for setting bootloader-
+addresses, lock- or fusebits anymore...
 
 Building on Windows:
 You need WinAVR for the firmware, see http://winavr.sourceforge.net/.
-To build the firmware with WinAVR, change into the "firmware" directory,
-check whether you need to edit the "Makefile" (e.g. change device settings,
-programmer hardware, clock rate etc.) or bootloaderconfig.h and type "make"
-to compile the source code. After you upload the code to the device with
-"make flash", you should set the fuses with "make fuse".
+To build the firmware with WinAVR, change into the "USBaspLoader" directory,
+check whether you need to edit the files mentioned above (e.g. change device
+settings, programmer hardware, clock rate etc.) and type "make" to compile
+the complete source code.
+After you upload the code to the device with "make flash", you should set
+the fuses with "make fuse".
+
+If you already have some working USBaspLoader on your controller, you can
+use "make update" to flash the "updater"-firmware to it.
+After starting this firmware on the microcontroller it will replace the
+old bootloader with the new one just compiled.
+The update-feature can be used on boards, where HVPP or ISP is not possible
+after production anymore. (Or you just want to save trouble laying out ISP.)
+Therefore you also could implement the "HAVE_SPMINTEREFACE_MAGICVALUE"-
+feature, protecting your board from wrong updates for other boards.
+
 At default configuration the bootloader protects itself from overwriting
 itself. In order to sustain the new update-capability, no lock bits 
 ("make lock") should be programmed after uploading the firmware and
 programming the fuse bits.
+
 
 Building on Unix (Linux, FreeBSD and Mac):
 You need the GNU toolchain and avr-libc for the firmware. See
@@ -56,11 +75,13 @@ for a good description on how to install the GNU compiler toolchain and
 avr-libc on Unix. For Mac OS X, we provide a read-made package, see
     http://www.obdev.at/avrmacpack/
 
-To build the firmware, change to the "firmware" directory, edit "Makefile"
-and bootloaderconfig.h as described in the Windows paragraph above and type
-"make" to compile the source code. Before you upload the code to the device
-with "make flash", you should set the fuses with "make fuse".
-
+To build the firmware, change to the "USBaspLoader" directory, edit the
+files mentioned above if you need to change settings (as also described in
+the Windows paragraph above) and type "make" to compile the source code.
+After you upload the code to the device with "make flash", you should
+set the fuses with "make fuse".
+As described within the Windows paragraph, "make update" can also
+be used instead.
 
 WORKING WITH THE BOOT LOADER
 ============================
@@ -70,17 +91,6 @@ the host computer and (if not bus powered) issue a Reset on the AVR.
 
 You can now flash the device with AVRDUDE through a "virtual" USBasp
 programmer.
-
-
-USING THE USB DRIVER FOR YOUR OWN PROJECTS
-==========================================
-This project is not intended as a reference implementation. If you want to
-use AVR-USB in your own projects, please see
-   * PowerSwitch for the most basic example,
-   * Automator for an HID example or
-   * AVR-Doper for a very complex example on how to simulate a serial
-     interface (virtual COM port).
-All these projects can be downloaded from http://www.obdev.at/avrusb/
 
 
 ABOUT THE LICENSE
