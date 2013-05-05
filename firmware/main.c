@@ -199,8 +199,8 @@ static const uchar  signatureBytes[4] = {
 * Under normal circumstances, RESET will not clear contents of RAM.
 * As always, if you want it done - do it yourself...
 */
-void __attribute__ ((naked)) __attribute__ ((section (".init3"))) __clearram(void);
-void __clearram(void) {
+void __attribute__ ((section(".init3"),naked,used,no_instrument_function)) __func_clearram(void);
+void __func_clearram(void) {
   extern size_t __bss_end;
   asm volatile (
     "__clearram:\n\t"
