@@ -4,7 +4,7 @@
  * Creation Date: 2012-08-01
  * Copyright: (c) 2013 by Stephan Baerwolf
  * License: GNU GPL v2 (see License.txt)
- * Version: 0.96
+ * Version: 0.96.1
  */
 
 #ifndef SPMINTERFACE_H_f70ba6adf7624275947e859bdbff0599
@@ -135,13 +135,13 @@ ret
     #elif defined (__AVR_ATmega1280__)
       #define  funcaddr___bootloader__do_spm 0x1e0e4
     #elif defined (__AVR_ATmega1281__)
-      #define  funcaddr___bootloader__do_spm 0x1e0e4
+      #define  funcaddr___bootloader__do_spm 0x1e0cc
     #elif defined (__AVR_ATmega1284__) || defined (__AVR_ATmega1284P__)
       #define  funcaddr___bootloader__do_spm 0x1e08c
     #elif defined (__AVR_ATmega2560__)
       #define  funcaddr___bootloader__do_spm 0x3e0e4
     #elif defined (__AVR_ATmega2561__)
-      #define  funcaddr___bootloader__do_spm 0x3e0e4
+      #define  funcaddr___bootloader__do_spm 0x3e0cc
     #else
       #error "unknown MCU - where is bootloader__do_spm located?"
     #endif
