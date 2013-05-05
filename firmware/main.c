@@ -371,19 +371,19 @@ defined (__AVR_ATmega2561__)
 }
 
 
-uchar   usbFunctionSetup(uchar data[8])
+usbMsgLen_t usbFunctionSetup(uchar data[8])
 {
 usbRequest_t    *rq = (void *)data;
-uchar           len = 0;
+usbMsgLen_t     len = 0;
 static uchar    replyBuffer[4];
 
     usbMsgPtr = (usbMsgPtr_t)replyBuffer;
     if(rq->bRequest == USBASP_FUNC_TRANSMIT){   /* emulate parts of ISP protocol */
         replyBuffer[3] = usbFunctionSetup_USBASP_FUNC_TRANSMIT(rq);
-        len = 4;
+        len = (usbMsgLen_t)4;
     }else if((rq->bRequest == USBASP_FUNC_ENABLEPROG) || (rq->bRequest == USBASP_FUNC_SETISPSCK)){
         /* replyBuffer[0] = 0; is never touched and thus always 0 which means success */
-        len = 1;
+        len = (usbMsgLen_t)1;
     }else if(rq->bRequest >= USBASP_FUNC_READFLASH && rq->bRequest <= USBASP_FUNC_SETLONGADDRESS){
         currentAddress.w[0] = rq->wValue.word;
         if(rq->bRequest == USBASP_FUNC_SETLONGADDRESS){
@@ -397,7 +397,7 @@ static uchar    replyBuffer[4];
 #if HAVE_EEPROM_PAGED_ACCESS
             currentRequest = rq->bRequest;
 #endif
-            len = 0xff; /* hand over to usbFunctionRead() / usbFunctionWrite() */
+            len = USB_NO_MSG; /* hand over to usbFunctionRead() / usbFunctionWrite() */
         }
 
     }else if(rq->bRequest == USBASP_FUNC_DISCONNECT){
