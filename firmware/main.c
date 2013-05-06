@@ -220,12 +220,14 @@ void __func_clearram(void) {
 }
 #endif
 
+#if (!USE_EXCESSIVE_ASSEMBLER) || (!(defined (__AVR_ATmega8__) || defined (__AVR_ATmega8A__) || defined (__AVR_ATmega8HVA__)))
 static void (*nullVector)(void) __attribute__((__noreturn__));
+#endif
 
-static void __attribute__((naked)) __attribute__((__noreturn__)) leaveBootloader(void);
-static void leaveBootloader(void) {
 #if (USE_EXCESSIVE_ASSEMBLER) && (defined (__AVR_ATmega8__) || defined (__AVR_ATmega8A__) || defined (__AVR_ATmega8HVA__))
-asm  volatile  (
+static void __attribute__((naked,__noreturn__)) leaveBootloader(void);
+static void leaveBootloader(void) {
+  asm  volatile  (
   "cli\n\t"
   "sbi		%[usbddr],	%[usbminus]\n\t"  
   "cbi		%[port],	%[bit]\n\t"
@@ -245,8 +247,10 @@ asm  volatile  (
     [mygicr]      "I" (_SFR_IO_ADDR(GICR)),	      
     [ivce]        "I" (1<<IVCE)
 );
-/* TODO: compiler will put an unnecessary "ret" at this end ! */
+}
 #else
+static void __attribute__((__noreturn__)) leaveBootloader(void);
+static void leaveBootloader(void) {
     DBG1(0x01, 0, 0);
     cli();
     usbDeviceDisconnect();
@@ -271,8 +275,8 @@ asm  volatile  (
  * handled correctly by the assembler.
  */
     nullVector();
-#endif
 }
+#endif
 
 /* ------------------------------------------------------------------------ */
 
