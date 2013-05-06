@@ -4,7 +4,7 @@
  * Creation Date: 2012-08-01
  * Copyright: (c) 2013 by Stephan Baerwolf
  * License: GNU GPL v2 (see License.txt)
- * Version: 0.96.3
+ * Version: 0.96.4
  */
 
 #ifndef SPMINTERFACE_H_f70ba6adf7624275947e859bdbff0599
@@ -146,7 +146,7 @@ ret
       #error "unknown MCU - where is bootloader__do_spm located?"
     #endif
 
-    #if defined(_VECTORS_SIZE)
+    #if ((defined(_VECTORS_SIZE)) && (defined(BOOTLOADER_ADDRESS)))
       #if (funcaddr___bootloader__do_spm != (BOOTLOADER_ADDRESS+_VECTORS_SIZE))
 	#error "bootloader__do_spm is not located after interrupts - sth. is very wrong here!" 
       #endif
