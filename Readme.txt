@@ -23,9 +23,11 @@ FILES IN THE DISTRIBUTION
 Readme.txt ........ The file you are currently reading.
 firmware .......... Source code of the controller firmware.
 firmware/usbdrv ... USB driver -- See Readme.txt in that directory for info
+updater ........... Source code of an updater-firmware exchanging bootloaders
 License.txt ....... Public license (GPL2) for all contents of this project.
-
 Schematics.txt .... File giving infos about default and recommended hw-layout.
+
+*_usbasploader.hex  precompiled USBaspLoader for default layout and settings
 
 
 BUILDING AND INSTALLING
@@ -36,7 +38,7 @@ For all platforms, you must first describe your hardware and layout
 specific parameters (PINs to use, etc...) in "firmware/bootloaderconfig.h".
 Some USB tuning is possible by modifying "firmware/usbconfig.h".
 All files provide working default settings, which can be used as an example.
-Then edit "firmware/Makefile.inc" (NOT Makefile directly!) to reflect
+Then edit "Makefile.inc" (NEVER any Makefile directly!) to reflect
 the target device, and some feature set departing from the default one.
 (You also can edit "firmware/bootloaderconfig.h" to change feature set
 and therefore memory space requirements).
