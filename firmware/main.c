@@ -128,6 +128,8 @@ static const uchar      	currentRequest = 0;
 static const uchar  signatureBytes[4] = {
 #ifdef SIGNATURE_BYTES
     SIGNATURE_BYTES
+#elif defined (__AVR_ATmega8535__)
+    0x1e, 0x93, 0x08, 0
 #elif defined (__AVR_ATmega8__) || defined (__AVR_ATmega8A__) || defined (__AVR_ATmega8HVA__)
     0x1e, 0x93, 0x07, 0
 #elif defined (__AVR_ATmega16__)
@@ -291,7 +293,9 @@ uchar usbFunctionSetup_USBASP_FUNC_TRANSMIT(usbRequest_t *rq) {
     rval = rq->wIndex.bytes[0] & 3;
     rval = signatureBytes[rval];
 #if HAVE_READ_LOCK_FUSE
-#if defined (__AVR_ATmega8__) || defined (__AVR_ATmega8A__) || defined (__AVR_ATmega16__) || defined (__AVR_ATmega32__)
+#if defined (__AVR_ATmega8535__) || 					\
+    defined (__AVR_ATmega8__) || defined (__AVR_ATmega8A__) || 		\
+    defined (__AVR_ATmega16__) || defined (__AVR_ATmega32__)
   }else if(rq->wValue.bytes[0] == 0x58 && rq->wValue.bytes[1] == 0x00){  /* read lock bits */
       rval = boot_lock_fuse_bits_get(GET_LOCK_BITS);
   }else if(rq->wValue.bytes[0] == 0x50 && rq->wValue.bytes[1] == 0x00){  /* read lfuse bits */

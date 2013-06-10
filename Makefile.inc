@@ -39,6 +39,12 @@ LOCKOPT = -U lock:w:0x3f:m
 #some features may be deactivated to fit into bootloader section
 #ATTANTION: CONFIG_NO... feature deactivation may not be optimal!
 
+FUSEOPT_8535            = -U lfuse:w:0x1f:m -U hfuse:w:0xc0:m
+BOOTLOADER_ADDRESS_8535 = 0x1800
+DEFINES_8535            = -DCONFIG_USE__EXCESSIVE_ASSEMBLER -DCONFIG_NO__NEED_WATCHDOG -DCONFIG_NO__PRECISESLEEP
+
+
+
 FUSEOPT_16              = -U lfuse:w:0x1f:m -U hfuse:w:0xc0:m
 BOOTLOADER_ADDRESS_16   = 0x3800
 DEFINES_16              = -DCONFIG_USE__EXCESSIVE_ASSEMBLER -DCONFIG_NO__NEED_WATCHDOG -DCONFIG_NO__PRECISESLEEP
@@ -149,7 +155,12 @@ DEFINES_2560             = #-DEMPTY
 
 #http://www.nongnu.org/avr-libc/user-manual/using_tools.html
 #autoselect logic
-ifeq ($(DEVICE), atmega8)
+ifeq ($(DEVICE), atmega8535)
+  FUSEOPT            = $(FUSEOPT_8535)
+  BOOTLOADER_ADDRESS = $(BOOTLOADER_ADDRESS_8535) 
+  MCUARCH            = avr4
+  DEFINES	     += $(DEFINES_8535)
+else ifeq ($(DEVICE), atmega8)
   FUSEOPT            = $(FUSEOPT_8)
   BOOTLOADER_ADDRESS = $(BOOTLOADER_ADDRESS_8) 
   MCUARCH            = avr4
