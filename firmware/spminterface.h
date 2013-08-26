@@ -4,7 +4,7 @@
  * Creation Date: 2012-08-01
  * Copyright: (c) 2013 by Stephan Baerwolf
  * License: GNU GPL v2 (see License.txt)
- * Version: 0.96.4
+ * Version: 0.96.5-testing
  */
 
 #ifndef SPMINTERFACE_H_f70ba6adf7624275947e859bdbff0599
@@ -431,9 +431,6 @@ void do_spm(const uint32_t flash_byteaddress, const uint8_t spmcrval, const uint
 
 /*
  * insert architecture dependend "bootloader_do_spm"-code
- * 
- * try to make this array as big as possible
- * (so bootloader always uses 2kbytes flash)
  */
 #if defined (__AVR_ATmega8535__) || defined (__AVR_ATmega8__) || defined (__AVR_ATmega8A__) || defined (__AVR_ATmega8HVA__) || defined (__AVR_ATmega16__) || defined (__AVR_ATmega32__)
 
