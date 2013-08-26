@@ -130,6 +130,7 @@ typedef uint32_t mypgm_addr_t;
 typedef void (*mypgm_spminterface)(const uint32_t flash_byteaddress, const uint8_t spmcrval, const uint16_t dataword);
 
 #if FLASHEND > 65535
+#	define	FULLCORRECTFLASHADDRESS(addr)	(((mypgm_addr_t)(addr)) | (((mypgm_addr_t)FLASHADDRESS) & ((mypgm_addr_t)0xffff0000)))
 #	define	mymemcpy_PF mymemcpy_PF_far
 void *mymemcpy_PF_far (void *dest, mypgm_addr_t src, size_t n) {
   uint8_t	*pagedata	= (void*)dest;
@@ -144,6 +145,7 @@ void *mymemcpy_PF_far (void *dest, mypgm_addr_t src, size_t n) {
   return dest;
 }
 #else
+#	define	FULLCORRECTFLASHADDRESS(addr)	(addr)
 #	define	mymemcpy_PF memcpy_PF 
 #endif
 
@@ -282,10 +284,10 @@ int main(void)
     for (i=0;i<SIZEOF_new_firmware;i+=2) {
       uint16_t a, b;
 #if (FLASHEND > 65535)
-      a=pgm_read_word_far((void*)&new_firmware[i]);
+      a=pgm_read_word_far(FULLCORRECTFLASHADDRESS(&new_firmware[i]));
       b=pgm_read_word_far(NEW_BOOTLOADER_ADDRESS+i);
 #else
-      a=pgm_read_word((void*)&new_firmware[i]);
+      a=pgm_read_word(FULLCORRECTFLASHADDRESS(&new_firmware[i]));
       b=pgm_read_word(NEW_BOOTLOADER_ADDRESS+i);
 #endif
       if (a!=b) {
@@ -312,7 +314,7 @@ int main(void)
 #ifdef CONFIG_UPDATER_CLEANMEMCLEAR
 	memset((void*)buffer, 0xff, sizeof(buffer));
 #endif
-	mymemcpy_PF((void*)buffer, (uint_farptr_t)((void*)&new_firmware[i]), ((SIZEOF_new_firmware-i)>sizeof(buffer))?sizeof(buffer):(SIZEOF_new_firmware-i));
+	mymemcpy_PF((void*)buffer, (uint_farptr_t)(FULLCORRECTFLASHADDRESS(&new_firmware[i])), ((SIZEOF_new_firmware-i)>sizeof(buffer))?sizeof(buffer):(SIZEOF_new_firmware-i));
 	
 	mypgm_WRITEpage(NEW_BOOTLOADER_ADDRESS+i, buffer, sizeof(buffer), temp_do_spm);
 	
@@ -325,7 +327,7 @@ int main(void)
 #ifdef CONFIG_UPDATER_CLEANMEMCLEAR
 	memset((void*)buffer, 0xff, sizeof(buffer));
 #endif
-	mymemcpy_PF((void*)buffer, (uint_farptr_t)((void*)&new_firmware[i]), ((SIZEOF_new_firmware-i)>sizeof(buffer))?sizeof(buffer):(SIZEOF_new_firmware-i));
+	mymemcpy_PF((void*)buffer, (uint_farptr_t)(FULLCORRECTFLASHADDRESS(&new_firmware[i])), ((SIZEOF_new_firmware-i)>sizeof(buffer))?sizeof(buffer):(SIZEOF_new_firmware-i));
 
 	mypgm_WRITEpage(NEW_BOOTLOADER_ADDRESS+i, buffer, sizeof(buffer), new_do_spm);
 	
@@ -335,4 +337,5 @@ int main(void)
 
     }
 
+    return 0;
 }
