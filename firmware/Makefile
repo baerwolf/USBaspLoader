@@ -18,7 +18,7 @@
 include ../Makefile.inc
 
 # Remove the -fno-* options when you use gcc 3, it does not understand them
-CFLAGS = -Wall -Os -fno-move-loop-invariants -fno-tree-scev-cprop -fno-inline-small-functions -I. -mmcu=$(DEVICE) -DBOOTLOADER_ADDRESS=$(BOOTLOADER_ADDRESS) -DF_CPU=$(F_CPU) $(DEFINES)
+CFLAGS = -Wall -Os -g3 -ggdb -fno-move-loop-invariants -fno-tree-scev-cprop -fno-inline-small-functions -I. -mmcu=$(DEVICE) -DBOOTLOADER_ADDRESS=$(BOOTLOADER_ADDRESS) -DF_CPU=$(F_CPU) $(DEFINES)
 LDFLAGS = -Wl,--relax,--gc-sections -Wl,--section-start=.text=$(BOOTLOADER_ADDRESS) -Wl,--defsym=nullVector=0
 
 OBJECTS =  usbdrv/usbdrvasm.o usbdrv/oddebug.o main.o
@@ -74,7 +74,9 @@ deepclean: clean
 
 clean:
 	$(RM) main.hex
-	$(RM) main.bin
+	$(RM) main.asm
+	$(RM) main.map
+	$(RM) main.elf
 	$(RM) main.o
 	$(RM) main.s
 	$(RM) usbdrv/usbdrvasm.o
@@ -83,25 +85,28 @@ clean:
 	$(RM) usbdrv/usbdrv.s
 
 # file targets:
-main.bin:	$(OBJECTS) bootloaderconfig.h
-	$(CC) $(CFLAGS) -o main.bin $(OBJECTS) $(LDFLAGS)
+main.elf:	$(OBJECTS) bootloaderconfig.h
+	$(CC) $(CFLAGS) -o main.elf $(OBJECTS) -Wl,-Map,main.map $(LDFLAGS)
 
-main.hex:	main.bin
+main.asm: main.elf
+	$(OBD) -Stdr main.elf > main.asm
+
+main.hex: main.elf main.asm
 	$(RM) main.hex main.eep.hex
-	$(OBC) -j .text -j .data -O ihex main.bin main.hex
+	$(OBC) -j .text -j .data -O ihex main.elf main.hex
 	$(ECHO) "."
 	$(ECHO) "."
 	$(ECHO) "."
 	$(ECHO) "!!!ATTANTION!!!"
 	$(ECHO) "(data+text) MUST fit into your MCUs bootloader section"
 	$(ECHO) "."
-	$(SIZ) --mcu $(DEVICE) main.bin
+	$(SIZ) --mcu $(DEVICE) main.elf
 	$(ECHO) "."
 	$(ECHO) "."
 	$(ECHO) "."
 
-disasm:	main.bin
-	$(OBD) -d main.bin
+disasm:	main.elf
+	$(OBD) -d main.elf
 
 cpp:
 	$(CC) $(CFLAGS) -E main.c

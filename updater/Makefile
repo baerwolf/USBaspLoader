@@ -8,7 +8,7 @@
 include ../Makefile.inc
 
 # elsewise gcc would complain unnecessary
-CFLAGS = -Wall -Wno-pointer-to-int-cast -Os -fno-move-loop-invariants -fno-tree-scev-cprop -fno-inline-small-functions -I. -mmcu=$(DEVICE) -DF_CPU=$(F_CPU) -DBOOTLOADER_ADDRESS=$(BOOTLOADER_ADDRESS) -DNEW_BOOTLOADER_ADDRESS=$(NEW_BOOTLOADER_ADDRESS) $(DEFINES)
+CFLAGS = -Wall -Wno-pointer-to-int-cast -Os -g3 -ggdb -fno-move-loop-invariants -fno-tree-scev-cprop -fno-inline-small-functions -I. -mmcu=$(DEVICE) -DF_CPU=$(F_CPU) -DBOOTLOADER_ADDRESS=$(BOOTLOADER_ADDRESS) -DNEW_BOOTLOADER_ADDRESS=$(NEW_BOOTLOADER_ADDRESS) -DFLASHADDRESS=$(FLASHADDRESS) $(DEFINES)
 LDFLAGS = -Wl,--relax,--gc-sections
 
 ifneq ($(FLASHADDRESS), 0)
@@ -43,12 +43,12 @@ flash:	all
 	$(ECHO) "."
 
 
-../firmware/main.bin:
+../firmware/main.elf:
 	$(MAKE) -C ../firmware main.hex
 
 
-usbasploader.raw: ../firmware/main.bin
-	$(OBC) -j .text -j .data -O binary ../firmware/main.bin usbasploader.raw
+usbasploader.raw: ../firmware/main.elf
+	$(OBC) -j .text -j .data -O binary ../firmware/main.elf usbasploader.raw
 
 usbasploader.o: usbasploader.raw
 	$(OBC) -B $(MCUARCH) -I binary -O elf32-avr --rename-section .data=.text --redefine-sym _binary_usbasploader_raw_start=usbasploader  usbasploader.raw usbasploader.o
@@ -59,9 +59,12 @@ updater.o: updater.c usbasploader.h usbasploader.raw usbasploader.o
 # 	$(CC) updater.c -c -o updater.o $(CFLAGS)
 
 updater.elf: updater.o usbasploader.o
-	$(CC) updater.o usbasploader.o -o updater.elf $(CFLAGS) $(LDFLAGS)
+	$(CC) updater.o usbasploader.o -o updater.elf -Wl,-Map,updater.map $(CFLAGS) $(LDFLAGS)
 
-updater.hex: updater.elf
+updater.asm: updater.elf
+	$(OBD) -Stdr updater.elf > updater.asm
+
+updater.hex: updater.elf updater.asm
 	$(OBC) -j .text -j .data -O ihex updater.elf updater.hex
 	$(ECHO) "."
 	$(ECHO) "."
@@ -76,5 +79,7 @@ clean:
 	$(RM) updater.o
 	$(RM) usbasploader.raw
 	$(RM) updater.hex
+	$(RM) updater.asm
 	$(RM) updater.elf
+	$(RM) updater.map
 	$(RM) usbasploader.raw
