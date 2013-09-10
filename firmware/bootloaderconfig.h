@@ -389,7 +389,8 @@ static volatile uint8_t __BOOTLOADERENTRY_FROMSOFTWARE__bootup_MCUCSR __attribut
 
 static inline bool bootLoaderCondition(void)
 {
-  if (__BOOTLOADERENTRY_FROMSOFTWARE__bootup_MCUCSR & (_BV(WDRF))) {
+  if (__BOOTLOADERENTRY_FROMSOFTWARE__bootup_MCUCSR & (~(_BV(WDRF)))) {
+  } else {
     if (__BOOTLOADERENTRY_FROMSOFTWARE__bootup_RAMEND_doesmatch == (__BOOTLOADERENTRY_FROMSOFTWARE__EXPECTEDADDRESS & 0xff)) {
       // anything else: match - the firmware is calling the bootloader
       return true;
