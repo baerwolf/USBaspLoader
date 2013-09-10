@@ -196,6 +196,44 @@ static const uchar  signatureBytes[4] = {
 
 /* ------------------------------------------------------------------------ */
 
+#if (HAVE_BOOTLOADERENTRY_FROMSOFTWARE)
+void __attribute__ ((section(".init3"),naked,used,no_instrument_function)) __BOOTLOADERENTRY_FROMSOFTWARE__bootup_investigate_RAMEND(void);
+void __BOOTLOADERENTRY_FROMSOFTWARE__bootup_investigate_RAMEND(void) {
+  asm volatile (
+    "in		%[mcucsrval]	,	%[mcucsrio]\n\t"
+    "ldi	r29		,	%[ramendhi]\n\t"
+    "ldi	r28		,	%[ramendlo]\n\t"
+#if (FLASHEND>131071)
+    "ld		%[result]	,	Y+\n\t"
+    "cpi	%[result]	,	%[bootaddrhi]\n\t"
+    "brne	__BOOTLOADERENTRY_FROMSOFTWARE__bootup_investigate_RAMEND_mismatch%=\n\t"
+#endif
+    "ld		%[result]	,	Y+\n\t"
+    "cpi	%[result]	,	%[bootaddrme]\n\t"
+    "ld		%[result]	,	Y+\n\t"
+    "breq	__BOOTLOADERENTRY_FROMSOFTWARE__bootup_investigate_RAMEND_done%=\n\t"
+
+    "__BOOTLOADERENTRY_FROMSOFTWARE__bootup_investigate_RAMEND_mismatch%=:\n\t"
+    "ldi	%[result]	,	0xff\n\t"
+
+    "__BOOTLOADERENTRY_FROMSOFTWARE__bootup_investigate_RAMEND_done%=:\n\t"
+    : [result]		"=a" (__BOOTLOADERENTRY_FROMSOFTWARE__bootup_RAMEND_doesmatch),
+      [mcucsrval]	"=a" (__BOOTLOADERENTRY_FROMSOFTWARE__bootup_MCUCSR)
+    : [mcucsrio]	"I"  (_SFR_IO_ADDR(MCUCSR)),
+#if (FLASHEND>131071)
+      [ramendhi]	"M" (((RAMEND - 2) >> 8) & 0xff),
+      [ramendlo]	"M" (((RAMEND - 2) >> 0) & 0xff),
+      [bootaddrhi]	"M" (((__BOOTLOADERENTRY_FROMSOFTWARE__EXPECTEDADDRESS) >>16) & 0xff),
+#else
+      [ramendhi]	"M" (((RAMEND - 1) >> 8) & 0xff),
+      [ramendlo]	"M" (((RAMEND - 1) >> 0) & 0xff),
+#endif
+      [bootaddrme]	"M" (((__BOOTLOADERENTRY_FROMSOFTWARE__EXPECTEDADDRESS) >> 8) & 0xff)
+    
+  );
+}
+#endif
+
 #if (USE_BOOTUP_CLEARRAM)
 /*
 * Under normal circumstances, RESET will not clear contents of RAM.
@@ -206,8 +244,10 @@ void __func_clearram(void) {
   extern size_t __bss_end;
   asm volatile (
     "__clearram:\n\t"
+#if (!(HAVE_BOOTLOADERENTRY_FROMSOFTWARE))
     "ldi r29, %[ramendhi]\n\t"
     "ldi r28, %[ramendlo]\n\t"
+#endif
     "__clearramloop%=:\n\t"
     "st -Y , __zero_reg__\n\t"
     "cp r28, %A[bssend]\n\t"
@@ -692,11 +732,11 @@ asm  volatile  (
 );
 #else
 	if (stayinloader >= 0x10) {
-	  if (!bootLoaderCondition()) {
+	  if (!bootLoaderConditionSimple()) {
 	    stayinloader-=0x10;
 	  } 
 	} else {
-	  if (bootLoaderCondition()) {
+	  if (bootLoaderConditionSimple()) {
 	    if (stayinloader > 1) stayinloader-=2;
 	  }
 	}

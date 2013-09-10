@@ -312,6 +312,16 @@ these macros are defined, the boot loader usees them.
  * (except registers and IO), since RESET will NOT clear old RAM content.
  */
 
+#ifdef CONFIG_NO__BOOTLOADERENTRY_FROMSOFTWARE
+#	define HAVE_BOOTLOADERENTRY_FROMSOFTWARE 0
+#else
+#	define HAVE_BOOTLOADERENTRY_FROMSOFTWARE 1
+#endif
+/* 
+ * Enable firmware to boot the bootloader without
+ * user intervention
+ */
+
 //#define SIGNATURE_BYTES             0x1e, 0x93, 0x07, 0     /* ATMega8 */
 /* This macro defines the signature bytes returned by the emulated USBasp to
  * the programmer software. They should match the actual device at least in
@@ -357,7 +367,41 @@ static inline void  bootLoaderExit(void)
     PIN_PORT(JUMPER_PORT) = 0;		/* undo bootLoaderInit() changes */
 }
 
-#define bootLoaderCondition()		((PIN_PIN(JUMPER_PORT) & (1 << PIN(JUMPER_PORT, JUMPER_BIT))) == 0)
+
+#define bootLoaderConditionSimple()	((PIN_PIN(JUMPER_PORT) & (1 << PIN(JUMPER_PORT, JUMPER_BIT))) == 0)
+
+#if (HAVE_BOOTLOADERENTRY_FROMSOFTWARE)
+/*
+ * How it works: The idea
+ * 
+ * During normal C initialization, the stackpointer (SP) always is pointed to
+ * SRAMs end, where it grows towards RAMSTART.
+ * 
+ * Check if last possible pushed address in stack is bootloaders address. 
+ * Store investigation result into "__BOOTLOADERENTRY_FROMSOFTWARE__bootup_RAMEND_doesmatch"
+ * Result will be "0xff" in case of mismatch.
+ */
+
+#include <stdbool.h>
+#include <stdint.h>
+
+#define __BOOTLOADERENTRY_FROMSOFTWARE__EXPECTEDADDRESS	(BOOTLOADER_ADDRESS>>1)
+static volatile uint8_t __BOOTLOADERENTRY_FROMSOFTWARE__bootup_RAMEND_doesmatch __attribute__ ((section(".noinit")));
+static volatile uint8_t __BOOTLOADERENTRY_FROMSOFTWARE__bootup_MCUCSR __attribute__ ((section(".noinit")));
+
+static inline bool bootLoaderCondition(void)
+{
+  if (__BOOTLOADERENTRY_FROMSOFTWARE__bootup_MCUCSR & (_BV(WDRF))) {
+    if (__BOOTLOADERENTRY_FROMSOFTWARE__bootup_RAMEND_doesmatch == (__BOOTLOADERENTRY_FROMSOFTWARE__EXPECTEDADDRESS & 0xff)) {
+      // anything else: match - the firmware is calling the bootloader
+      return true;
+    }
+  }
+  return bootLoaderConditionSimple();
+}
+#else
+#define bootLoaderCondition		bootLoaderConditionSimple
+#endif
 
 #endif /* __ASSEMBLER__ */
 
