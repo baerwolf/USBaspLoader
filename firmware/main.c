@@ -407,6 +407,23 @@ defined (__AVR_ATmega2561__)
 #   endif
       }
 #endif
+#if (HAVE_BOOTLOADER_HIDDENEXITCOMMAND)
+#	if ((HAVE_BOOTLOADER_HIDDENEXITCOMMAND != 0xac) && \
+	    (HAVE_BOOTLOADER_HIDDENEXITCOMMAND != 0x20) && (HAVE_BOOTLOADER_HIDDENEXITCOMMAND != 0x28) && \
+	    (HAVE_BOOTLOADER_HIDDENEXITCOMMAND != 0x40) && (HAVE_BOOTLOADER_HIDDENEXITCOMMAND != 0x48) && \
+	    (HAVE_BOOTLOADER_HIDDENEXITCOMMAND != 0x4c) && \
+	    (HAVE_BOOTLOADER_HIDDENEXITCOMMAND != 0xa0) && \
+	    (HAVE_BOOTLOADER_HIDDENEXITCOMMAND != 0xc0) && \
+	    (HAVE_BOOTLOADER_HIDDENEXITCOMMAND != 0x58) && \
+	    (HAVE_BOOTLOADER_HIDDENEXITCOMMAND != 0x5c) && \
+	    (HAVE_BOOTLOADER_HIDDENEXITCOMMAND != 0x30) && \
+	    (HAVE_BOOTLOADER_HIDDENEXITCOMMAND != 0xac) && \
+	    (HAVE_BOOTLOADER_HIDDENEXITCOMMAND != 0x50) && (HAVE_BOOTLOADER_HIDDENEXITCOMMAND != 0x58) && \
+	    (HAVE_BOOTLOADER_HIDDENEXITCOMMAND != 0x38))
+  }else if(rq->wValue.bytes[0] == (HAVE_BOOTLOADER_HIDDENEXITCOMMAND)){  /* cause a bootLoaderExit at disconnect */
+      stayinloader = 0xf1;  /* we need to be connected - so assume it */
+#	endif
+#endif
   }else{
       /* ignore all others, return default value == 0 */
   }

@@ -322,6 +322,18 @@ these macros are defined, the boot loader usees them.
  * user intervention
  */
 
+#ifdef CONFIG_NO__BOOTLOADER_HIDDENEXITCOMMAND
+#	define HAVE_BOOTLOADER_HIDDENEXITCOMMAND 0
+#else
+#	define HAVE_BOOTLOADER_HIDDENEXITCOMMAND 0xff
+#endif
+/* 
+ * When enabling "BOOTLOADER_HIDDENEXITCOMMAND", then
+ * sending the RAW-ISP command "0xff 0xXX 0xXX 0xXX"
+ * will cause the bootloader to start the firmware
+ * as soon as the programming software disconnects.
+ */
+
 //#define SIGNATURE_BYTES             0x1e, 0x93, 0x07, 0     /* ATMega8 */
 /* This macro defines the signature bytes returned by the emulated USBasp to
  * the programmer software. They should match the actual device at least in
