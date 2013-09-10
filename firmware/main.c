@@ -113,7 +113,13 @@ typedef union longConverter{
 
 
 #if BOOTLOADER_CAN_EXIT
-static volatile unsigned char	stayinloader = 0xfe;
+#	if ((HAVE_UNPRECISEWAIT))
+/* here we have to assume we need to optimize for every byte */
+#define __REGISTER_stayinloader_initialValue 0xfe
+volatile register uint8_t stayinloader __asm__("r17");
+#	else
+static volatile uint8_t stayinloader = 0xfe;
+#	endif
 #endif
 
 static longConverter_t  	currentAddress; /* in bytes */
@@ -195,6 +201,18 @@ static const uchar  signatureBytes[4] = {
 };
 
 /* ------------------------------------------------------------------------ */
+
+#if (__REGISTER_stayinloader_initialValue)
+/* need to put it after libc init - otherwise it fucks up the register */
+void __attribute__ ((section(".init8"),naked,used,no_instrument_function)) __REGISTER_stayinloader_initialValue_INITIALIZATION(void);
+void __REGISTER_stayinloader_initialValue_INITIALIZATION(void) {
+  asm volatile (
+    "ldi	%[silreg]	,	%[silval]\n\t"
+    : [silreg]		"=a" (stayinloader)
+    : [silval]		"M"  (__REGISTER_stayinloader_initialValue)
+  );
+}
+#endif
 
 #if (HAVE_BOOTLOADERENTRY_FROMSOFTWARE)
 void __attribute__ ((section(".init3"),naked,used,no_instrument_function)) __BOOTLOADERENTRY_FROMSOFTWARE__bootup_investigate_RAMEND(void);
