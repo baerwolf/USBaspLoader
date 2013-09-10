@@ -358,8 +358,6 @@ static inline void  bootLoaderInit(void)
 //     deactivated by Stephan - reset after each avrdude op is annoing!
 //     if(!(MCUCSR & (1 << EXTRF)))    /* If this was not an external reset, ignore */
 //         leaveBootloader();
-
-    MCUCSR = 0;                     /* clear all reset flags for next time */
 }
 
 static inline void  bootLoaderExit(void)

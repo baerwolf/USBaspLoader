@@ -707,6 +707,7 @@ int __attribute__((__noreturn__)) main(void)
 #	endif
 	wdt_disable();    /* main app may have enabled watchdog */
 #endif
+	MCUCSR = 0;       /* clear all reset flags for next time */
         initForUsbConnectivity();
         do{
             usbPoll();
