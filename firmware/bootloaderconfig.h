@@ -347,6 +347,14 @@ these macros are defined, the boot loader usees them.
  * exit as long as bootLoaderConditionSimple stays on.
  */
 
+#ifdef CONFIG_HAVE__BOOTLOADER_ALWAYSENTERPROGRAMMODE
+#endif
+/*
+ * Ignore bootLoaderCondition() (BUT NOT bootLoaderConditionSimple())
+ * and always enter the program-mode.
+ * This is helpful to emulate behaviour of Arduino bootloaders
+ */
+
 //#define SIGNATURE_BYTES             0x1e, 0x93, 0x07, 0     /* ATMega8 */
 /* This macro defines the signature bytes returned by the emulated USBasp to
  * the programmer software. They should match the actual device at least in
@@ -412,6 +420,9 @@ static inline void  bootLoaderExit(void)
 static volatile uint8_t __BOOTLOADERENTRY_FROMSOFTWARE__bootup_RAMEND_doesmatch __attribute__ ((section(".noinit")));
 static volatile uint8_t __BOOTLOADERENTRY_FROMSOFTWARE__bootup_MCUCSR __attribute__ ((section(".noinit")));
 
+#	ifdef CONFIG_HAVE__BOOTLOADER_ALWAYSENTERPROGRAMMODE
+#		define bootLoaderCondition()	(true)
+#	else
 static inline bool bootLoaderCondition(void)
 {
   if (__BOOTLOADERENTRY_FROMSOFTWARE__bootup_MCUCSR & (~(_BV(WDRF)))) {
@@ -423,8 +434,13 @@ static inline bool bootLoaderCondition(void)
   }
   return bootLoaderConditionSimple();
 }
+#	endif
 #else
-#define bootLoaderCondition		bootLoaderConditionSimple
+#	ifdef CONFIG_HAVE__BOOTLOADER_ALWAYSENTERPROGRAMMODE
+#		define bootLoaderCondition()	(true)
+#	else
+#		define bootLoaderCondition	bootLoaderConditionSimple
+#	endif
 #endif
 
 #endif /* __ASSEMBLER__ */
