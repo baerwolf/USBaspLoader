@@ -493,12 +493,7 @@ static uchar    replyBuffer[4];
     }else if(rq->bRequest == USBASP_FUNC_DISCONNECT){
 
 #if BOOTLOADER_CAN_EXIT
-#	if (BOOTLOADER_LOOPCYCLES_TIMEOUT)
-      timeout_remaining = BOOTLOADER_LOOPCYCLES_TIMEOUT;
-      stayinloader	    = (0xfe);
-#	else
       stayinloader	   &= (0xfe);
-#	endif
 #endif
     }else{
         /* ignore: others, but could be USBASP_FUNC_CONNECT */
@@ -766,10 +761,14 @@ int __attribute__((__noreturn__)) main(void)
         initForUsbConnectivity();
         do{
 #if ((BOOTLOADER_LOOPCYCLES_TIMEOUT) && (BOOTLOADER_CAN_EXIT))
-	__loopscycles++;
-	if (!(__loopscycles)) {
-	  if(timeout_remaining)	timeout_remaining--;
-	  else			stayinloader&=0xf1;
+	if (stayinloader & 0x1) {
+	  timeout_remaining = BOOTLOADER_LOOPCYCLES_TIMEOUT;
+	} else {
+	  __loopscycles++;
+	  if (!(__loopscycles)) {
+	    if(timeout_remaining)	timeout_remaining--;
+	    else			stayinloader&=0xf1;
+	  }
 	}
 #endif
             usbPoll();
