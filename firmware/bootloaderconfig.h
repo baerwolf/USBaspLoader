@@ -334,6 +334,19 @@ these macros are defined, the boot loader usees them.
  * as soon as the programming software disconnects.
  */
 
+#ifndef BOOTLOADER_LOOPCYCLES_TIMEOUT
+#	define BOOTLOADER_LOOPCYCLES_TIMEOUT	0
+#endif
+/* 
+ * When greater than "0", "BOOTLOADER_LOOPCYCLES_TIMEOUT"
+ * defines how many 16bit loopcycles can be cycled,
+ * before bootloader times out and starts user
+ * firmware.
+ * Of course "BOOTLOADER_CAN_EXIT" must be enabled.
+ * If value is even too small, bootloader  will not
+ * exit as long as bootLoaderConditionSimple stays on.
+ */
+
 //#define SIGNATURE_BYTES             0x1e, 0x93, 0x07, 0     /* ATMega8 */
 /* This macro defines the signature bytes returned by the emulated USBasp to
  * the programmer software. They should match the actual device at least in

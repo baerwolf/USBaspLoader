@@ -112,7 +112,18 @@ typedef union longConverter{
 }longConverter_t;
 
 
-#if BOOTLOADER_CAN_EXIT
+#if (BOOTLOADER_CAN_EXIT)
+#	if (BOOTLOADER_LOOPCYCLES_TIMEOUT)
+#		if (BOOTLOADER_LOOPCYCLES_TIMEOUT < 256)
+#			if ((HAVE_UNPRECISEWAIT))
+volatile register uint8_t timeout_remaining __asm__("r2");
+#			else
+static volatile uint8_t timeout_remaining;
+#			endif
+#		else
+static volatile uint16_t timeout_remaining;
+#		endif
+#	endif
 #	if ((HAVE_UNPRECISEWAIT))
 /* here we have to assume we need to optimize for every byte */
 #define __REGISTER_stayinloader_initialValue 0xfe
@@ -482,7 +493,12 @@ static uchar    replyBuffer[4];
     }else if(rq->bRequest == USBASP_FUNC_DISCONNECT){
 
 #if BOOTLOADER_CAN_EXIT
+#	if (BOOTLOADER_LOOPCYCLES_TIMEOUT)
+      timeout_remaining = BOOTLOADER_LOOPCYCLES_TIMEOUT;
+      stayinloader	    = (0xfe);
+#	else
       stayinloader	   &= (0xfe);
+#	endif
 #endif
     }else{
         /* ignore: others, but could be USBASP_FUNC_CONNECT */
@@ -721,6 +737,10 @@ static void initForUsbConnectivity(void)
 
 int __attribute__((__noreturn__)) main(void)
 {
+#if ((BOOTLOADER_LOOPCYCLES_TIMEOUT) && (BOOTLOADER_CAN_EXIT))
+    uint16_t __loopscycles;
+    timeout_remaining = BOOTLOADER_LOOPCYCLES_TIMEOUT;
+#endif
     /* initialize  */
     bootLoaderInit();
     odDebugInit();
@@ -745,6 +765,13 @@ int __attribute__((__noreturn__)) main(void)
 	MCUCSR = 0;       /* clear all reset flags for next time */
         initForUsbConnectivity();
         do{
+#if ((BOOTLOADER_LOOPCYCLES_TIMEOUT) && (BOOTLOADER_CAN_EXIT))
+	__loopscycles++;
+	if (!(__loopscycles)) {
+	  if(timeout_remaining)	timeout_remaining--;
+	  else			stayinloader&=0xf1;
+	}
+#endif
             usbPoll();
 #if BOOTLOADER_CAN_EXIT
 #if USE_EXCESSIVE_ASSEMBLER
