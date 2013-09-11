@@ -493,7 +493,12 @@ static uchar    replyBuffer[4];
     }else if(rq->bRequest == USBASP_FUNC_DISCONNECT){
 
 #if BOOTLOADER_CAN_EXIT
+#	ifdef CONFIG_HAVE__BOOTLOADER_ABORTTIMEOUTONACT
+      /* let the main loop know for ever that here was activity */
+      stayinloader	   &= (0xfc);
+#	else
       stayinloader	   &= (0xfe);
+#	endif
 #endif
     }else{
         /* ignore: others, but could be USBASP_FUNC_CONNECT */
@@ -761,7 +766,12 @@ int __attribute__((__noreturn__)) main(void)
         initForUsbConnectivity();
         do{
 #if ((BOOTLOADER_LOOPCYCLES_TIMEOUT) && (BOOTLOADER_CAN_EXIT))
-	if (stayinloader & 0x1) {
+#	ifdef CONFIG_HAVE__BOOTLOADER_ABORTTIMEOUTONACT
+	if (stayinloader != 0x0e) {
+	  /* can be reached, since high-nibble is decreased every cycle... */
+#else
+	if (stayinloader & 0x01) {
+#endif
 	  timeout_remaining = BOOTLOADER_LOOPCYCLES_TIMEOUT;
 	} else {
 	  __loopscycles++;

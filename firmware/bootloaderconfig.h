@@ -347,6 +347,16 @@ these macros are defined, the boot loader usees them.
  * exit as long as bootLoaderConditionSimple stays on.
  */
 
+#ifdef CONFIG_HAVE__BOOTLOADER_ABORTTIMEOUTONACT
+#endif
+/*
+ * When defined, the bootloader will abort the timeout when
+ * it sees some activity (bootLoaderConditionSimple() or
+ * programming). 
+ * After aborting timeout, the bootloader falls back to
+ * conventional exitting.
+ */
+
 #ifdef CONFIG_HAVE__BOOTLOADER_ALWAYSENTERPROGRAMMODE
 #endif
 /*
