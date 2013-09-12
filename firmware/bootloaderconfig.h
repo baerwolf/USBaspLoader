@@ -365,6 +365,27 @@ these macros are defined, the boot loader usees them.
  * This is helpful to emulate behaviour of Arduino bootloaders
  */
 
+#ifdef CONFIG_HAVE__BOOTLOADER_IGNOREPROGBUTTON
+#	if ( (defined(CONFIG_HAVE__BOOTLOADER_ALWAYSENTERPROGRAMMODE)) && (defined(BOOTLOADER_CAN_EXIT)) && (BOOTLOADER_LOOPCYCLES_TIMEOUT >= 8) )
+#		define BOOTLOADER_IGNOREPROGBUTTON	1
+#	else
+#		define BOOTLOADER_IGNOREPROGBUTTON	0
+#	endif
+#endif
+/*
+ * Generates an USBaspLoader without using the PROGBUTTON.
+ * It can be used to reduce the required PINcount for USBaspLoader
+ * on the MCU.
+ * However this feature is very dangerous, so it becomes only
+ * enabled, if "CONFIG_HAVE__BOOTLOADER_ALWAYSENTERPROGRAMMODE" is
+ * enabled and "CONFIG_NO__BOOTLOADER_CAN_EXIT" is disabled, too.
+ * Additionally "BOOTLOADER_LOOPCYCLES_TIMEOUT" must be greater 
+ * or equal than 8 (In order to give user enough time to program).
+ * 
+ * When active, "JUMPER_PORT" and "JUMPER_BIT" are ignored and
+ * can be soldered otherwise.
+ */
+
 //#define SIGNATURE_BYTES             0x1e, 0x93, 0x07, 0     /* ATMega8 */
 /* This macro defines the signature bytes returned by the emulated USBasp to
  * the programmer software. They should match the actual device at least in
@@ -395,8 +416,11 @@ these macros are defined, the boot loader usees them.
 
 static inline void  bootLoaderInit(void)
 {
+#if (BOOTLOADER_IGNOREPROGBUTTON)
+#else
     PIN_DDR(JUMPER_PORT)  = 0;
     PIN_PORT(JUMPER_PORT) = (1<< PIN(JUMPER_PORT, JUMPER_BIT)); /* activate pull-up */
+#endif
 
 //     deactivated by Stephan - reset after each avrdude op is annoing!
 //     if(!(MCUCSR & (1 << EXTRF)))    /* If this was not an external reset, ignore */
@@ -405,11 +429,18 @@ static inline void  bootLoaderInit(void)
 
 static inline void  bootLoaderExit(void)
 {
+#if (BOOTLOADER_IGNOREPROGBUTTON)
+#else
     PIN_PORT(JUMPER_PORT) = 0;		/* undo bootLoaderInit() changes */
+#endif
 }
 
 
-#define bootLoaderConditionSimple()	((PIN_PIN(JUMPER_PORT) & (1 << PIN(JUMPER_PORT, JUMPER_BIT))) == 0)
+#if (BOOTLOADER_IGNOREPROGBUTTON)
+#	define bootLoaderConditionSimple()	(false)
+#else
+#	define bootLoaderConditionSimple()	((PIN_PIN(JUMPER_PORT) & (1 << PIN(JUMPER_PORT, JUMPER_BIT))) == 0)
+#endif
 
 #if (HAVE_BOOTLOADERENTRY_FROMSOFTWARE)
 /*

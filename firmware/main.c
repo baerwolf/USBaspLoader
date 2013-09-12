@@ -783,6 +783,21 @@ int __attribute__((__noreturn__)) main(void)
 #endif
             usbPoll();
 #if BOOTLOADER_CAN_EXIT
+#if BOOTLOADER_IGNOREPROGBUTTON
+  /* 
+   * remove the high nibble as it would be subtracted due to:
+   * "(!bootLoaderConditionSimple())"
+   */ 
+#if USE_EXCESSIVE_ASSEMBLER
+asm  volatile  (
+  "andi		%[sil],		0x0f\n\t"
+  : [sil]        "+d" (stayinloader)
+  :
+);
+#else
+  stayinloader &= 0x0f;
+#endif
+#else
 #if USE_EXCESSIVE_ASSEMBLER
 asm  volatile  (
   "cpi		%[sil],		0x10\n\t"
@@ -812,6 +827,7 @@ asm  volatile  (
 	    if (stayinloader > 1) stayinloader-=2;
 	  }
 	}
+#endif
 #endif
 #endif
 
