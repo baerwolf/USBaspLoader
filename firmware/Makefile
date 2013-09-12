@@ -4,6 +4,7 @@
 # Creation Date: 2007-12-10
 # Author: Stephan Bärwolf
 # Improvement Date: 2012-07-31
+# Improvement Date: 2012-09-12
 # Tabsize: 4
 # Copyright: (c) 2007 by OBJECTIVE DEVELOPMENT Software GmbH
 # License: GNU GPL v2 (see License.txt)
@@ -21,23 +22,19 @@ include ../Makefile.inc
 CFLAGS = -Wall -Os -g3 -ggdb -fno-move-loop-invariants -fno-tree-scev-cprop -fno-inline-small-functions -I. -mmcu=$(DEVICE) -DBOOTLOADER_ADDRESS=$(BOOTLOADER_ADDRESS) -DF_CPU=$(F_CPU) $(DEFINES)
 LDFLAGS = -Wl,--relax,--gc-sections -Wl,--section-start=.text=$(BOOTLOADER_ADDRESS) -Wl,--defsym=nullVector=0
 
-OBJECTS =  usbdrv/usbdrvasm.o usbdrv/oddebug.o main.o
+DEPENDS =  bootloaderconfig.h ../Makefile.inc
 
 # symbolic targets:
-all: main.hex
+all: main.hex $(DEPENDS)
 
-.c.o:
-	$(CC) $(CFLAGS) -c $< -o $@
+usbdrv/usbdrvasm.o: usbdrv/usbdrvasm.S $(DEPENDS)
+	$(CC) -x assembler-with-cpp -c usbdrv/usbdrvasm.S -o usbdrv/usbdrvasm.o $(CFLAGS)
 
-.S.o:
-	$(CC) $(CFLAGS) -x assembler-with-cpp -c $< -o $@
-# "-x assembler-with-cpp" should not be necessary since this is the default
-# file type for the .S (with capital S) extension. However, upper case
-# characters are not always preserved on Windows. To ensure WinAVR
-# compatibility define the file type manually.
+usbdrv/oddebug.o: usbdrv/oddebug.c $(DEPENDS)
+	$(CC) usbdrv/oddebug.c -c -o usbdrv/oddebug.o $(CFLAGS)
 
-.c.s:
-	$(CC) $(CFLAGS) -S $< -o $@
+main.o: main.c $(DEPENDS)
+	$(CC) main.c -c -o main.o $(CFLAGS)
 
 flash:	all
 	$(ECHO) "."
@@ -72,7 +69,7 @@ read_fuses:
 deepclean: clean
 	$(RM) *~
 
-clean:
+clean: 
 	$(RM) main.hex
 	$(RM) main.asm
 	$(RM) main.map
@@ -85,13 +82,13 @@ clean:
 	$(RM) usbdrv/usbdrv.s
 
 # file targets:
-main.elf:	$(OBJECTS) bootloaderconfig.h
-	$(CC) $(CFLAGS) -o main.elf $(OBJECTS) -Wl,-Map,main.map $(LDFLAGS)
+main.elf: usbdrv/usbdrvasm.o usbdrv/oddebug.o main.o $(DEPENDS)
+	$(CC) $(CFLAGS) -o main.elf usbdrv/usbdrvasm.o usbdrv/oddebug.o main.o -Wl,-Map,main.map $(LDFLAGS)
 
-main.asm: main.elf
+main.asm: main.elf $(DEPENDS)
 	$(OBD) -Stdr main.elf > main.asm
 
-main.hex: main.elf main.asm
+main.hex: main.elf main.asm $(DEPENDS)
 	$(RM) main.hex main.eep.hex
 	$(OBC) -j .text -j .data -O ihex main.elf main.hex
 	$(ECHO) "."
@@ -105,8 +102,8 @@ main.hex: main.elf main.asm
 	$(ECHO) "."
 	$(ECHO) "."
 
-disasm:	main.elf
+disasm:	main.elf $(DEPENDS)
 	$(OBD) -d main.elf
 
-cpp:
+cpp: $(DEPENDS)
 	$(CC) $(CFLAGS) -E main.c
