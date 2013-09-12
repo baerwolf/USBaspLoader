@@ -360,15 +360,26 @@ these macros are defined, the boot loader usees them.
  */
 
 #ifdef CONFIG_HAVE__BOOTLOADER_ALWAYSENTERPROGRAMMODE
+#	if (BOOTLOADER_CAN_EXIT)
+#		define BOOTLOADER_ALWAYSENTERPROGRAMMODE 1
+#	else
+#		define BOOTLOADER_ALWAYSENTERPROGRAMMODE 0
+#	endif
+#else
+#	define BOOTLOADER_ALWAYSENTERPROGRAMMODE 0
 #endif
 /*
  * Ignore bootLoaderCondition() (BUT NOT bootLoaderConditionSimple())
  * and always enter the program-mode.
  * This is helpful to emulate behaviour of Arduino bootloaders
+ * 
+ * However, this feature may be dangerous, since bootloader may never exit.
+ * So it is enabled, only if "CONFIG_NO__BOOTLOADER_CAN_EXIT" is disabled.
+ * 
  */
 
 #ifdef CONFIG_HAVE__BOOTLOADER_IGNOREPROGBUTTON
-#	if ( (defined(CONFIG_HAVE__BOOTLOADER_ALWAYSENTERPROGRAMMODE)) && (defined(BOOTLOADER_CAN_EXIT)) && (BOOTLOADER_LOOPCYCLES_TIMEOUT >= 8) )
+#	if ( (BOOTLOADER_ALWAYSENTERPROGRAMMODE) && (defined(BOOTLOADER_CAN_EXIT)) && (BOOTLOADER_LOOPCYCLES_TIMEOUT >= 8) )
 #		define BOOTLOADER_IGNOREPROGBUTTON	1
 #	else
 #		define BOOTLOADER_IGNOREPROGBUTTON	0
@@ -463,7 +474,7 @@ static inline void  bootLoaderExit(void)
 static volatile uint8_t __BOOTLOADERENTRY_FROMSOFTWARE__bootup_RAMEND_doesmatch __attribute__ ((section(".noinit")));
 static volatile uint8_t __BOOTLOADERENTRY_FROMSOFTWARE__bootup_MCUCSR __attribute__ ((section(".noinit")));
 
-#	ifdef CONFIG_HAVE__BOOTLOADER_ALWAYSENTERPROGRAMMODE
+#	if (BOOTLOADER_ALWAYSENTERPROGRAMMODE)
 #		define bootLoaderCondition()	(true)
 #	else
 static inline bool bootLoaderCondition(void)
@@ -479,7 +490,7 @@ static inline bool bootLoaderCondition(void)
 }
 #	endif
 #else
-#	ifdef CONFIG_HAVE__BOOTLOADER_ALWAYSENTERPROGRAMMODE
+#	if (BOOTLOADER_ALWAYSENTERPROGRAMMODE)
 #		define bootLoaderCondition()	(true)
 #	else
 #		define bootLoaderCondition	bootLoaderConditionSimple
