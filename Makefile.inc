@@ -13,7 +13,18 @@ FLASHADDRESS = 0x0000
 
 # some MCU independend defines...
 #...will be extended within MCU dependend configuration below...
-DEFINES = -DCONFIG_NO__CHIP_ERASE -DCONFIG_NO__ONDEMAND_PAGEERASE
+DEFINES += -DCONFIG_NO__CHIP_ERASE -DCONFIG_NO__ONDEMAND_PAGEERASE
+
+# have the bootloader always enter the programming mode
+;DEFINES += -DCONFIG_HAVE__BOOTLOADER_ALWAYSENTERPROGRAMMODE
+
+# have the bootloader exit itself after around 3 seconds (@16MHz) inactivity
+;DEFINES += -DCONFIG_BOOTLOADER_LOOPCYCLES_TIMEOUT=16 -DCONFIG_HAVE__BOOTLOADER_ABORTTIMEOUTONACT
+
+# save the PROG button on the layout (CAREFUL - read feature description first)
+;DEFINES += -DCONFIG_HAVE__BOOTLOADER_IGNOREPROGBUTTON
+
+
 
 # some MCUs with small BLS (bootloader section) need to deactivate some
 # features in order to fit into BLS.
