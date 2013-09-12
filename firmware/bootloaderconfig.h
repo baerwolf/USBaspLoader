@@ -334,8 +334,10 @@ these macros are defined, the boot loader usees them.
  * as soon as the programming software disconnects.
  */
 
-#ifndef BOOTLOADER_LOOPCYCLES_TIMEOUT
-#	define BOOTLOADER_LOOPCYCLES_TIMEOUT	0
+#ifdef CONFIG_BOOTLOADER_LOOPCYCLES_TIMEOUT
+#	define BOOTLOADER_LOOPCYCLES_TIMEOUT	(CONFIG_BOOTLOADER_LOOPCYCLES_TIMEOUT)
+#else 
+#	define BOOTLOADER_LOOPCYCLES_TIMEOUT	(0)
 #endif
 /* 
  * When greater than "0", "BOOTLOADER_LOOPCYCLES_TIMEOUT"
