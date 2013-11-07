@@ -130,7 +130,9 @@ ret
       #define  funcaddr___bootloader__do_spm 0x7068
     #elif defined (__AVR_ATmega640__)
       #define  funcaddr___bootloader__do_spm 0xe0e4
-    #elif defined (__AVR_ATmega644__) || defined (__AVR_ATmega644A__) || defined (__AVR_ATmega644P__) || defined (__AVR_ATmega644PA__)
+    #elif defined (__AVR_ATmega644__)
+      #define  funcaddr___bootloader__do_spm 0xe070
+    #elif defined (__AVR_ATmega644A__) || defined (__AVR_ATmega644P__) || defined (__AVR_ATmega644PA__)
       #define  funcaddr___bootloader__do_spm 0xe07c
     #elif defined (__AVR_ATmega128__)
       #define  funcaddr___bootloader__do_spm 0x1e08c
