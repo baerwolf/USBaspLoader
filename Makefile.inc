@@ -82,7 +82,7 @@ DEFINES_324             = #-DEMPTY
 
 FUSEOPT_128             = -U lfuse:w:0x1f:m -U hfuse:w:0xc0:m -U efuse:w:0xfd:m
 BOOTLOADER_ADDRESS_128  = 0x1E000
-DEFINES_128             = #-DEMPTY
+DEFINES_128             = -D__AVR_LIBC_DEPRECATED_ENABLE__
 
 
 
