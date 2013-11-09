@@ -57,7 +57,7 @@ these macros are defined, the boot loader usees them.
  * "B", the registers PORTB, PINB and DDRB will be used.
  */
 #ifndef USB_CFG_INTPORT_BIT
-  #if (defined(__AVR_ATmega640__) || defined(__AVR_ATmega1280__) || defined(__AVR_ATmega1281__) || defined(__AVR_ATmega2560__) || defined(__AVR_ATmega2561__))
+  #if (defined(__AVR_ATmega640__) || defined (__AVR_ATmega128__) || defined(__AVR_ATmega1280__) || defined(__AVR_ATmega1281__) || defined(__AVR_ATmega2560__) || defined(__AVR_ATmega2561__))
     #define USB_CFG_INTPORT_BIT 0
   #else
     #define USB_CFG_INTPORT_BIT 2
