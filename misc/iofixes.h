@@ -47,6 +47,12 @@
 #		define RWWSRE	4
 #	endif
 
+/* RWWSB */
+#	ifndef RWWSB
+#		warning RWWSB not defined for ATmega88A - fixing
+#		define RWWSB	6
+#	endif
+
 
 
 
