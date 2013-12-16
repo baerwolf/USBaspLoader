@@ -2,6 +2,8 @@
   #define F_CPU 1000000UL /* 1 Mhz-Takt; hier richtigen Wert eintragen */
 #endif
 
+
+#include "../misc/iofixes.h"
 #include "../firmware/spminterface.h"
 #include "usbasploader.h"
 
@@ -15,7 +17,6 @@
 #endif
 
 
-#include <avr/io.h>
 #include <avr/interrupt.h>
 #include <avr/wdt.h>
 

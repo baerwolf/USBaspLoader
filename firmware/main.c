@@ -11,7 +11,8 @@
 
 #include "spminterface.h"  /* must be included as first! */
 
-#include <avr/io.h>
+#include "../misc/iofixes.h"
+
 #include <avr/interrupt.h>
 #include <avr/pgmspace.h>
 #include <avr/wdt.h>

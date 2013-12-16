@@ -2,8 +2,9 @@
 #ifndef USBASPLOADER_H_5f27a7e9840141b1aa57eef07c1d939f
 #define USBASPLOADER_H_5f27a7e9840141b1aa57eef07c1d939f 1
 
+#include "../misc/iofixes.h"
+
 #include <stdint.h>
-#include <avr/io.h>
 #include <avr/pgmspace.h>
 #include "../firmware/spminterface.h"
 

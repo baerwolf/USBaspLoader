@@ -88,9 +88,11 @@ ret
 *
 */ 
 
-#include <avr/io.h>
 #include "bootloaderconfig.h"
 
+#ifndef SREG
+#	include <avr/io.h>
+#endif
 
 
 /*

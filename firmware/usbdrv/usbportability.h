@@ -118,7 +118,7 @@ static inline void  sei(void)
 #else   /* default development environment is avr-gcc/avr-libc */
 /* ------------------------------------------------------------------------- */
 
-#include <avr/io.h>
+#include "../../misc/iofixes.h"
 #ifdef __ASSEMBLER__
 #   define _VECTOR(N)   __vector_ ## N   /* io.h does not define this for asm */
 #else
