@@ -699,10 +699,10 @@ static void _mywait(uint8_t waitloopcnt) {
        * ...if we loop 65536/F_CPU more or less...
        * ...unimportant - just save some opcodes
        */
-"_mywait_sleeploop:					\n\t"
+"_mywait_sleeploop%=:					\n\t"
       "sbiw	r30,	1				\n\t"
       "sbci	%0,	0				\n\t"
-      "brne	_mywait_sleeploop			\n\t"
+      "brne	_mywait_sleeploop%=			\n\t"
       : "+d" (waitloopcnt)
       :
       : "r30","r31"
