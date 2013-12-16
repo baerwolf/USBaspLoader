@@ -399,6 +399,18 @@ these macros are defined, the boot loader usees them.
  * can be soldered otherwise.
  */
 
+#ifdef CONFIG_NO__BOOTLOADER_ADDITIONALDEVICEWAIT
+#	define HAVE_BOOTLOADER_ADDITIONALMSDEVICEWAIT 0
+#else
+#	define HAVE_BOOTLOADER_ADDITIONALMSDEVICEWAIT 50
+#endif
+/* 
+ * When enabling "HAVE_BOOTLOADER_ADDITIONALMSDEVICEWAIT", then
+ * the bootloader will alway delay its bootup by the configured
+ * number of milliseconds.
+ * This gives the pullups additional time to charge up.
+ */
+
 //#define SIGNATURE_BYTES             0x1e, 0x93, 0x07, 0     /* ATMega8 */
 /* This macro defines the signature bytes returned by the emulated USBasp to
  * the programmer software. They should match the actual device at least in

@@ -691,32 +691,35 @@ uchar   i;
 
 /* ------------------------------------------------------------------------ */
 
-static void initForUsbConnectivity(void)
-{
 #if HAVE_UNPRECISEWAIT
-    /* (0.25s*F_CPU)/(4 cycles per loop) ~ (65536*waitloopcnt)
-     * F_CPU/(16*65536) ~ waitloopcnt
-     * F_CPU / 1048576 ~ waitloopcnt
-     */
-    uint8_t waitloopcnt = 1 + (F_CPU/1048576);
-#endif
-    usbInit();
-    /* enforce USB re-enumerate: */
-    usbDeviceDisconnect();  /* do this while interrupts are disabled */
-#if HAVE_UNPRECISEWAIT
+static void _mywait(uint8_t waitloopcnt) {
     asm volatile (
       /*we really don't care what value Z has...
        * ...if we loop 65536/F_CPU more or less...
        * ...unimportant - just save some opcodes
        */
-"initForUsbConnectivity_sleeploop:			\n\t"
+"_mywait_sleeploop:					\n\t"
       "sbiw	r30,	1				\n\t"
       "sbci	%0,	0				\n\t"
-      "brne	initForUsbConnectivity_sleeploop	\n\t"
+      "brne	_mywait_sleeploop			\n\t"
       : "+d" (waitloopcnt)
       :
       : "r30","r31"
     );
+}
+#endif
+
+static void initForUsbConnectivity(void)
+{
+    usbInit();
+    /* enforce USB re-enumerate: */
+    usbDeviceDisconnect();  /* do this while interrupts are disabled */
+#if HAVE_UNPRECISEWAIT
+    /* (0.25s*F_CPU)/(4 cycles per loop) ~ (65536*waitloopcnt)
+     * F_CPU/(16*65536) ~ waitloopcnt
+     * F_CPU / 1048576 ~ waitloopcnt
+     */
+    _mywait(1 + (F_CPU/1048576));
 #else
     _delay_ms(260);         /* fake USB disconnect for > 250 ms */
 #endif
@@ -737,6 +740,13 @@ int __attribute__((__noreturn__)) main(void)
 #ifndef NO_FLASH_WRITE
     GICR = (1 << IVCE);  /* enable change of interrupt vectors */
     GICR = (1 << IVSEL); /* move interrupts to boot flash section */
+#endif
+#if (HAVE_BOOTLOADER_ADDITIONALMSDEVICEWAIT>0)    
+#	if HAVE_UNPRECISEWAIT
+    _mywait(1+((HAVE_BOOTLOADER_ADDITIONALMSDEVICEWAIT*F_CPU)/262144000));
+#	else
+    _delay_ms(HAVE_BOOTLOADER_ADDITIONALMSDEVICEWAIT);
+#	endif
 #endif
     if(bootLoaderCondition()){
 #if (BOOTLOADER_CAN_EXIT)
