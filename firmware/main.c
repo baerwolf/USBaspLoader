@@ -165,6 +165,8 @@ static const uchar  signatureBytes[4] = {
     0x1e, 0x93, 0x0a, 0
 #elif defined (__AVR_ATmega88PA__)
     0x1e, 0x93, 0x0F, 0
+#elif defined (__AVR_ATmega162__)
+    0x1e, 0x94, 0x04, 0
 #elif defined (__AVR_ATmega164A__)
     0x1e, 0x94, 0x0f, 0
 #elif defined (__AVR_ATmega164P__) || defined (__AVR_ATmega164PA__)
@@ -364,6 +366,7 @@ uchar usbFunctionSetup_USBASP_FUNC_TRANSMIT(usbRequest_t *rq) {
 
 #elif defined (__AVR_ATmega48__)   || defined (__AVR_ATmega48A__)   || defined (__AVR_ATmega48P__)   || defined (__AVR_ATmega48PA__)  ||  \
 defined (__AVR_ATmega88__)   || defined (__AVR_ATmega88A__)   || defined (__AVR_ATmega88P__)   || defined (__AVR_ATmega88PA__)  ||  \
+defined (__AVR_ATmega162__)  || 												      \
 defined (__AVR_ATmega164A__) || defined (__AVR_ATmega164P__)  || 								      \
 defined (__AVR_ATmega168__)  || defined (__AVR_ATmega168A__)  || defined (__AVR_ATmega168P__)  || defined (__AVR_ATmega168PA__) ||  \
 defined (__AVR_ATmega324A__) || defined (__AVR_ATmega324P__)  ||								      \

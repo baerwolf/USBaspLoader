@@ -122,6 +122,8 @@ ret
       #define  funcaddr___bootloader__do_spm 0x7054
     #elif defined (__AVR_ATmega88__) || defined (__AVR_ATmega88P__) || defined (__AVR_ATmega88A__) || defined (__AVR_ATmega88PA__)  
       #define  funcaddr___bootloader__do_spm 0x1834
+    #elif defined (__AVR_ATmega162__)
+      #define  funcaddr___bootloader__do_spm 0x3870
     #elif defined (__AVR_ATmega164A__) || defined (__AVR_ATmega164P__) || defined (__AVR_ATmega164PA__)  
       #define  funcaddr___bootloader__do_spm 0x387c
     #elif defined (__AVR_ATmega168__) || defined (__AVR_ATmega168P__) || defined (__AVR_ATmega168A__) || defined (__AVR_ATmega168PA__)  
@@ -436,13 +438,13 @@ void do_spm(const uint32_t flash_byteaddress, const uint8_t spmcrval, const uint
 /*
  * insert architecture dependend "bootloader_do_spm"-code
  */
-#if defined (__AVR_ATmega8535__) || defined (__AVR_ATmega8__) || defined (__AVR_ATmega8A__) || defined (__AVR_ATmega8HVA__) || defined (__AVR_ATmega16__) || defined (__AVR_ATmega32__)
+#if defined (__AVR_ATmega8535__) || defined (__AVR_ATmega8__) || defined (__AVR_ATmega8A__) || defined (__AVR_ATmega8HVA__) || defined (__AVR_ATmega16__) || defined (__AVR_ATmega162__) || defined (__AVR_ATmega32__)
 
 #if defined (__AVR_ATmega8535__) || defined (__AVR_ATmega8__) || defined (__AVR_ATmega8A__) || defined (__AVR_ATmega8HVA__)
   #if (BOOTLOADER_ADDRESS != 0x1800)
     #error BOOTLOADER_ADDRESS!=0x1800, on current MCU "funcaddr___bootloader__do_spm" might be currupted - please edit spminterface.h for nonstandard use
   #endif
-#elif defined (__AVR_ATmega16__)
+#elif defined (__AVR_ATmega16__) || defined (__AVR_ATmega162__)
   #if (BOOTLOADER_ADDRESS != 0x3800)
     #error BOOTLOADER_ADDRESS!=0x3800, on current MCU "funcaddr___bootloader__do_spm" might be currupted - please edit spminterface.h for nonstandard use
   #endif
