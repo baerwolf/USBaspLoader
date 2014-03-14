@@ -271,14 +271,37 @@ size_t mypgm_WRITEpage(const mypgm_addr_t byteaddress,const void* buffer, const 
 }
 #endif
 
+#if defined(UPDATECRC32)
+#include "crccheck.c"
+#endif
+
 // #pragma GCC diagnostic ignored "-Wno-pointer-to-int-cast"
 int main(void)
 {
+#if defined(UPDATECRC32)
+    uint32_t crcval;
+#endif
     size_t  i;
     uint8_t buffer[SPM_PAGESIZE];
     
     wdt_disable();
     cli();
+
+#if defined(UPDATECRC32)
+    // check if new firmware-image is corrupted
+    crcval = D_32;
+    for (i=0;i<SIZEOF_new_firmware;i+=1) {
+#if (FLASHEND > 65535)
+      crcval = update_crc_32(crcval, pgm_read_byte_far(FULLCORRECTFLASHADDRESS(&new_firmware[i])));
+#else
+      crcval = update_crc_32(crcval, pgm_read_byte(FULLCORRECTFLASHADDRESS(&new_firmware[i])));
+#endif
+    }
+    crcval ^= D_32;
+
+    // allow to change the firmware
+    if (crcval == ((uint32_t)UPDATECRC32)) {
+#endif
 
     // check if firmware would change...
     buffer[0]=0;
@@ -337,6 +360,10 @@ int main(void)
 
 
     }
+
+#if defined(UPDATECRC32)
+    }
+#endif
 
     return 0;
 }

@@ -57,7 +57,15 @@ usbasploader.o: usbasploader.raw $(DEPENDS)
 
 
 updater.o: updater.c usbasploader.h usbasploader.raw usbasploader.o $(DEPENDS)
+ifndef UPDATECRC32
 	$(CC) updater.c -c -o updater.o -DSIZEOF_new_firmware=$(shell stat -c %s usbasploader.raw) $(CFLAGS)
+else
+ifeq ($(UPDATECRC32), 0)
+	$(CC) updater.c -c -o updater.o -DSIZEOF_new_firmware=$(shell stat -c %s usbasploader.raw) -DUPDATECRC32=0x$(shell crc32 usbasploader.raw) $(CFLAGS)
+else
+	$(CC) updater.c -c -o updater.o -DSIZEOF_new_firmware=$(shell stat -c %s usbasploader.raw) -DUPDATECRC32=$(UPDATECRC32) $(CFLAGS)
+endif
+endif
 # 	$(CC) updater.c -c -o updater.o $(CFLAGS)
 
 updater.elf: updater.o usbasploader.o $(DEPENDS)
