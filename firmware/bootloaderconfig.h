@@ -199,6 +199,131 @@ these macros are defined, the boot loader usees them.
  * There may be no garanty for it, but Stephan will then send you an
  * response with a "SPMINTEREFACE_MAGICVALUE" just for your board/project...
  * WITH REQUESTING A MAGIC YOU AGREE TO PUBLISHED YOUR DATA SEND WITHIN THE REQUEST 
+ * 
+ * 
+ * ***************************************************************************
+ * ***************************************************************************
+ * 
+ * Because of pressing interest there will be following free-for-use scheme.
+ * It will always start with 0xf as the 4 most significant bits, and then
+ * can be encoded based of the signature of the AVR, the IO-Port used for USB,
+ * the USB dataline PINs, the external interrupt used for USB, the clock frequency
+ * the BOD voltage and if the watchdog is enabled by fuses.
+ * 
+ * The magic will be: 0xf??????? in binary 0b1111ZZZZ YYYYYYYY WXXXVUUU TTSSSRRR
+ * 
+ * --> where the 4 bit of Z correspond to the middle of the 3 byte AVR signature:
+ * 	SIGNATURE_1 == 0x90	<-->	ZZZZ == 0b0000
+ * 	SIGNATURE_1 == 0x91	<-->	ZZZZ == 0b0001
+ * 	SIGNATURE_1 == 0x92	<-->	ZZZZ == 0b0010
+ * 	SIGNATURE_1 == 0x93	<-->	ZZZZ == 0b0011
+ * 	SIGNATURE_1 == 0x94	<-->	ZZZZ == 0b0100
+ * 	SIGNATURE_1 == 0x95	<-->	ZZZZ == 0b0101
+ * 	SIGNATURE_1 == 0x96	<-->	ZZZZ == 0b0110
+ * 	SIGNATURE_1 == 0x97	<-->	ZZZZ == 0b0111
+ * 	SIGNATURE_1 == 0x98	<-->	ZZZZ == 0b1000
+ * 	SIGNATURE_1 == 0xA6	<-->	ZZZZ == 0b1001
+ * 	SIGNATURE_1 == 0xA7	<-->	ZZZZ == 0b1010 * 
+ * 	SIGNATURE_1 == 0xA8	<-->	ZZZZ == 0b1011
+ * 	reserved			ZZZZ == 0b1100 * 
+ * 	not free (database magics)	ZZZZ == 0b1101 * 
+ * 	not free (database magics)	ZZZZ == 0b1110 * 
+ * 	not free (database magics)	ZZZZ == 0b1111 * 
+ * If the AVRs SIGNATURE_1 is different from the presented 12, this coding scheme is
+ * not applicable for you - please ask for a personal magic in this case.
+ * 
+ * 
+ * --> where the 8 bit of Y are the SIGNATURE_2 byte (for example 0b00000111 on ATmega8)
+ * 
+ * 
+ * --> where the 1 bit of W is watchdog enabled by fuse: 0=no, 1=yes (WD enabled)
+ * 
+ * 
+ * --> where the 3 bit of X are the (external) crystal clockspeed
+ * 	12MHz external crystal	 <-->	 XXX == 0b000
+ * 	12.8MHz external crystal <-->	 XXX == 0b001
+ * 	reserved		 <-->	 XXX == 0b010
+ * 	15MHz external crystal	 <-->	 XXX == 0b011
+ * 	16MHz external crystal	 <-->	 XXX == 0b100
+ * 	16.5MHz external crystal <-->	 XXX == 0b101
+ * 	18MHz external crystal	 <-->	 XXX == 0b110
+ * 	20MHz external crystal	 <-->	 XXX == 0b111
+ * If your clockspeed is different from the presented 8, this coding scheme is
+ * not applicable for you - please ask for a personal magic in this case.
+ * 
+ * 
+ * --> where the 1 bit of V depends on the controllers Vcc:
+ * 	4.5V (ususally 5V)	 <-->	   V == 0
+ * 	3.3V			 <-->	   V == 1 
+ * 
+ * 
+ * --> where the 3 bit of U define the PORT (USB_CFG_IOPORTNAME) for USB
+ * 	PORTA			 <-->	 UUU == 0b000
+ * 	PORTB			 <-->	 UUU == 0b001
+ * 	PORTC			 <-->	 UUU == 0b010
+ * 	PORTD			 <-->	 UUU == 0b011
+ * 	PORTE			 <-->	 UUU == 0b100
+ * 	PORTF			 <-->	 UUU == 0b101
+ * 	PORTG			 <-->	 UUU == 0b110
+ * 	PORTH			 <-->	 UUU == 0b111
+ * If your PORT is different from the presented 8:
+ * This coding scheme is more an example. UUU=0b000 really means, the first GPIO port
+ * on the specified MCU. (0b001 is the second, 0b010 the third...)
+ * Normally there aren't more then 8 GPIO ports on an AVR - so this coding works.
+ * If there are more then 8, only the first 8 ports can be encoded and otherwise
+ * this coding scheme is not applicable for you - please ask for a personal magic in this case.
+ * 
+ * 
+ * --> where the 2 bit of T define the external interrupt used for USBD
+ * 	INT0			 <-->	  TT == 0b00
+ * 	INT1			 <-->	  TT == 0b01
+ * 	INT2			 <-->	  TT == 0b10
+ * 	INT3			 <-->	  TT == 0b11
+ * If you use a different interrupt, this coding scheme is not applicable
+ * for you - please ask for a personal magic in this case.
+ * 
+ * 
+ * --> where the 3 bit of S define the PIN (on the previous encoded port) for USB+
+ *     (basically the value of USB_CFG_DPLUS_BIT)
+ * 	0			 <-->	 SSS == 0b000
+ * 	1			 <-->	 SSS == 0b001
+ * 		...
+ * 	7			 <-->	 SSS == 0b111
+ * 
+ * 
+ * --> where the 3 bit of R define the PIN (on the previous encoded port) for USB-
+ *     (basically the value of USB_CFG_DMINUS_BIT)
+ * 	0			 <-->	 RRR == 0b000
+ * 	1			 <-->	 RRR == 0b001
+ * 		...
+ * 	7			 <-->	 RRR == 0b111
+ * 
+ * 
+ * WARNING:
+ * 	Please note, that this 0xf------- magic does not include
+ * 	any information about the bootloader condition pin (and port)!
+ * 	This magic just ensures basic protection against different
+ * 	layouts. (Which only covers essential data)
+ * 
+ * 	?Maybe as a heuristic?: 
+ * 	The bootloader condition pin should be the same port as USB,
+ * 	at the pin before USB_CFG_DMINUS_BIT.
+ * 
+ * 	If you want to be very safe, request your own magic...
+ * 
+ * 
+ * 
+ * Examples (USB pinning are defaults from this file):
+ * 
+ * "ATmega8@16MHz powered with 5V and no watchdog fused":		0xf3078317
+ * The same just for ATmega328p: 					0xf50f8317
+ * 
+ * "ATmega1024p @ 20MHz powered with 3V and watchdog fused active":	0xf705fb17
+ * "ATmega2560  @ 12MHz powered with 5V and watchdog fused active":	0xf8010307
+ * 
+ * ***************************************************************************
+ * ***************************************************************************
+ * 
  */
 
 #ifndef CONFIG_NO__EEPROM_PAGED_ACCESS
