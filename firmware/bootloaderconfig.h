@@ -558,6 +558,7 @@ these macros are defined, the boot loader usees them.
 
 #ifndef MCUCSR          /* compatibility between ATMega8 and ATMega88 */
 #   define MCUCSR   MCUSR
+#   define __MCUCSR_COMPATMODE 1
 #endif
 
 /* WARNING:

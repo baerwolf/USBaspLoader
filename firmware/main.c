@@ -695,38 +695,52 @@ uchar   i;
 
 /* ------------------------------------------------------------------------ */
 
+#if ((NEED_WATCHDOG) || (defined(__MCUCSR_COMPATMODE)))
+#	define __MYWAIT_CYCLESperLOOP 5 /* cpu cycles per loop */
+#else
+#	define __MYWAIT_CYCLESperLOOP 4 /* cpu cycles per loop */
+#endif
+#	define __MYWAIT_CPLCONST (65536*__MYWAIT_CYCLESperLOOP) /* per waitloopcnt */
+
 #if HAVE_UNPRECISEWAIT
+#define _mydelay_ms(millisecs) _mywait(1+((((F_CPU/1000)*millisecs)/__MYWAIT_CYCLESperLOOP)/65536))
 static void _mywait(uint8_t waitloopcnt) {
     asm volatile (
       /*we really don't care what value Z has...
        * ...if we loop 65536/F_CPU more or less...
        * ...unimportant - just save some opcodes
        */
+#else
+#define _mydelay_ms(millisecs) __DO_NOT_USE_DIRECTLY_mywait(0+((((F_CPU/1000)*millisecs)/__MYWAIT_CYCLESperLOOP)/65536), (uint16_t)(((uint32_t)(((F_CPU/1000)*millisecs)/__MYWAIT_CYCLESperLOOP))%(uint32_t)65536))
+static void __DO_NOT_USE_DIRECTLY_mywait(uint8_t waitloopcnt, uint16_t remainder) {
+    asm volatile (
+#endif
 "_mywait_sleeploop%=:					\n\t"
+#if ((NEED_WATCHDOG) || (defined(__MCUCSR_COMPATMODE)))
+      "wdr						\n\t"
+#endif
       "sbiw	r30,	1				\n\t"
-      "sbci	%0,	0				\n\t"
+      "sbci	%[wlc],	0				\n\t"
       "brne	_mywait_sleeploop%=			\n\t"
-      : "+d" (waitloopcnt)
+#if HAVE_UNPRECISEWAIT
+      : [wlc] "+d" (waitloopcnt)
       :
       : "r30","r31"
+#else
+      : [wlc] "+d" (waitloopcnt),
+	[rem] "+z" (remainder)
+      :
+#endif
     );
 }
-#endif
+
 
 static void initForUsbConnectivity(void)
 {
     usbInit();
     /* enforce USB re-enumerate: */
     usbDeviceDisconnect();  /* do this while interrupts are disabled */
-#if HAVE_UNPRECISEWAIT
-    /* (0.25s*F_CPU)/(4 cycles per loop) ~ (65536*waitloopcnt)
-     * F_CPU/(16*65536) ~ waitloopcnt
-     * F_CPU / 1048576 ~ waitloopcnt
-     */
-    _mywait(1 + (F_CPU/1048576));
-#else
-    _delay_ms(260);         /* fake USB disconnect for > 250 ms */
-#endif
+    _mydelay_ms(250);	/* fake USB disconnect for > 250 ms */
     usbDeviceConnect();
     sei();
 }
@@ -745,12 +759,8 @@ int __attribute__((__noreturn__)) main(void)
     GICR = (1 << IVCE);  /* enable change of interrupt vectors */
     GICR = (1 << IVSEL); /* move interrupts to boot flash section */
 #endif
-#if (HAVE_BOOTLOADER_ADDITIONALMSDEVICEWAIT>0)    
-#	if HAVE_UNPRECISEWAIT
-    _mywait(1+((HAVE_BOOTLOADER_ADDITIONALMSDEVICEWAIT*F_CPU)/262144000));
-#	else
-    _delay_ms(HAVE_BOOTLOADER_ADDITIONALMSDEVICEWAIT);
-#	endif
+#if (HAVE_BOOTLOADER_ADDITIONALMSDEVICEWAIT>0)
+    _mydelay_ms(HAVE_BOOTLOADER_ADDITIONALMSDEVICEWAIT);
 #endif
     if(bootLoaderCondition()){
 #if (BOOTLOADER_CAN_EXIT)
@@ -778,19 +788,10 @@ asm  volatile  (
 	      stayinloader = stayinloader_initialValue;
 #	endif
 #endif
-#if NEED_WATCHDOG
-#	if (defined(MCUSR) && defined(WDRF))
-	/* 
-	 * Fix issue 6: (special thanks to coldtobi)
-	 * 
-	 * The WDRF bit in the MCUSR needs to be cleared first,
-	 * otherwise it is not possible to disable the watchdog
-	 */
-	MCUSR &= ~(_BV(WDRF));
-#	endif
+	MCUCSR = 0;       /* clear all reset flags for next time */
+#if ((NEED_WATCHDOG) || (defined(__MCUCSR_COMPATMODE)))
 	wdt_disable();    /* main app may have enabled watchdog */
 #endif
-	MCUCSR = 0;       /* clear all reset flags for next time */
         initForUsbConnectivity();
         do{
 #if ((BOOTLOADER_LOOPCYCLES_TIMEOUT) && (BOOTLOADER_CAN_EXIT))
