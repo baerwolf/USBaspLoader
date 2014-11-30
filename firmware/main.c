@@ -113,6 +113,11 @@ typedef union longConverter{
 }longConverter_t;
 
 
+#define __IMPLEMENT_PRESERVE_WATCHDOG	((PRESERVE_WATCHDOG) && (!(USE_EXCESSIVE_ASSEMBLER)) && ((NEED_WATCHDOG) || (defined(__MCUCSR_COMPATMODE))))
+#if (__IMPLEMENT_PRESERVE_WATCHDOG)
+static uint8_t __original_WDTCR;
+#endif
+
 #if (BOOTLOADER_CAN_EXIT)
 #	if (BOOTLOADER_LOOPCYCLES_TIMEOUT)
 #		if (BOOTLOADER_LOOPCYCLES_TIMEOUT < 256)
@@ -323,6 +328,16 @@ static void leaveBootloader(void) {
     GICR = (1 << IVCE);     /* enable change of interrupt vectors */
     GICR = (0 << IVSEL);    /* move interrupts to application flash section */
 
+/* restore the original watchdog timer if necessary */
+#if (__IMPLEMENT_PRESERVE_WATCHDOG)
+    if (__original_WDTCR & _BV(WDE)) {
+      __original_WDTCR &= ~(_BV(WDCE));
+      wdt_reset();
+      WDTCR |= (_BV(WDCE)) | (_BV(WDE));
+      WDTCR  = __original_WDTCR;
+      wdt_reset();
+    }
+#endif
 /*
  * There seems to be another funny compiler Bug.
  * When gcc is using "eicall" opcode it forgets to modify EIND.
@@ -788,9 +803,16 @@ asm  volatile  (
 	      stayinloader = stayinloader_initialValue;
 #	endif
 #endif
+#if (__IMPLEMENT_PRESERVE_WATCHDOG)
+	__original_WDTCR=WDTCR;
+	if (__original_WDTCR & _BV(WDE)) {
+	  wdt_enable(WDTO_2S);
+	}
+#else
 	MCUCSR = 0;       /* clear all reset flags for next time */
-#if ((NEED_WATCHDOG) || (defined(__MCUCSR_COMPATMODE)))
+#	if ((NEED_WATCHDOG) || (defined(__MCUCSR_COMPATMODE)))
 	wdt_disable();    /* main app may have enabled watchdog */
+#	endif
 #endif
         initForUsbConnectivity();
         do{
@@ -809,6 +831,9 @@ asm  volatile  (
 	    else			stayinloader&=0xf1;
 	  }
 	}
+#endif
+#if (__IMPLEMENT_PRESERVE_WATCHDOG)
+	    wdt_reset();
 #endif
             usbPoll();
 #if BOOTLOADER_CAN_EXIT

@@ -16,7 +16,7 @@ FLASHADDRESS = 0x0000
 
 # some MCU independent defines...
 #...will be extended within MCU dependend configuration below...
-DEFINES += -DCONFIG_NO__CHIP_ERASE -DCONFIG_NO__ONDEMAND_PAGEERASE
+DEFINES += -DCONFIG_NO__CHIP_ERASE -DCONFIG_NO__ONDEMAND_PAGEERASE -DCONFIG_NO__PRESERVE_WATCHDOG
 
 # have the bootloader always enter the programming mode
 ;DEFINES += -DCONFIG_HAVE__BOOTLOADER_ALWAYSENTERPROGRAMMODE

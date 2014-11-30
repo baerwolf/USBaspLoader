@@ -391,6 +391,19 @@ these macros are defined, the boot loader usees them.
  * then "NEED_WATCHDOG" may be deactivated in order to save some memory.
  */
 
+#ifndef CONFIG_NO__PRESERVE_WATCHDOG
+#	define PRESERVE_WATCHDOG	1
+#else
+#	define PRESERVE_WATCHDOG	0
+#endif
+/* In case a watchdog is supported (NEED_WATCHDOG) and USE_EXCESSIVE_ASSEMBLER is false,
+ * the bootloader will run with active watchdog instead of disabling it.
+ * After leaving the bootloader, the original watchdog state is restored.
+ * WARNING: This might break compatibility with user firmwares, since they
+ * need to be aware of watchdog enabled. (which could be enabled by some
+ * previous running firmware and not neccessarily only by the WDTON FUSE)
+ */
+
 #ifndef CONFIG_NO__PRECISESLEEP
 #	define HAVE_UNPRECISEWAIT	0
 #else
@@ -559,6 +572,11 @@ these macros are defined, the boot loader usees them.
 #ifndef MCUCSR          /* compatibility between ATMega8 and ATMega88 */
 #   define MCUCSR   MCUSR
 #   define __MCUCSR_COMPATMODE 1
+#endif
+
+#ifndef WDTCR          /* another compatibility between ATMega8 and ATMega88 */
+#   define WDTCR   WDTCSR
+#   define __WDTCR_COMPATMODE 1
 #endif
 
 /* WARNING:
