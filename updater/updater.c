@@ -284,6 +284,7 @@ int main(void)
     size_t  i;
     uint8_t buffer[SPM_PAGESIZE];
     
+    MCUCSR = 0; /* do not care about previous reset - just disable the wdt */
     wdt_disable();
     cli();
 
