@@ -43,7 +43,11 @@
 
 
 #include "bootloaderconfig.h"
+
 #include "usbdrv/usbdrv.c"
+static usbMsgLen_t usbFunctionDescriptor(struct usbRequest *rq) {
+  return 0;
+}
 
 #ifndef BOOTLOADER_ADDRESS
   #error need to know the bootloaders flash address!
