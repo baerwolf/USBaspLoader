@@ -126,7 +126,7 @@ static uint8_t __original_WDTCR;
 #	if (BOOTLOADER_LOOPCYCLES_TIMEOUT)
 #		if (BOOTLOADER_LOOPCYCLES_TIMEOUT < 256)
 #			if ((HAVE_UNPRECISEWAIT))
-volatile register uint8_t timeout_remaining __asm__("r2");
+	 register uint8_t timeout_remaining __asm__("r2");
 #			else
 static volatile uint8_t timeout_remaining;
 #			endif
@@ -138,7 +138,7 @@ static volatile uint16_t timeout_remaining;
 #	define stayinloader_initialValue 0xfe
 #	if ((HAVE_UNPRECISEWAIT))
 /* here we have to assume we need to optimize for every byte */
-volatile register uint8_t stayinloader __asm__("r17");
+	 register uint8_t stayinloader __asm__("r17");
 #	else
 static volatile uint8_t stayinloader;
 #	endif
