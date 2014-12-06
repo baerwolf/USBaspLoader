@@ -59,7 +59,7 @@
 #define TEMP_SPM_BLKSIZE (TEMP_SPM_NUMPAGE*SPM_PAGESIZE)
 #ifndef TEMP_SPM_PAGEADR
   #warning "TEMP_SPM_PAGEADR" is not defined explicitly - will choose END OF FLASH !
-  #define TEMP_SPM_PAGEADR ((FLASHEND+1) - TEMP_SPM_BLKSIZE)
+  #define TEMP_SPM_PAGEADR ((FLASHEND - TEMP_SPM_BLKSIZE)+1)
 #endif
 #define TEMP_SPM_ADDRESS ((TEMP_SPM_PAGEADR) + (funcaddr___bootloader__do_spm % SPM_PAGESIZE))
 
