@@ -7,15 +7,15 @@
 
 include ../Makefile.inc
 
-# Check operative system to determine with stat version are we using.
-UNAME := $(shell uname)
-
-ifeq ($(UNAME), Darwin)
-	# Variable declaration for Mac OS X (BSD stat)
-	STATSIZE=stat -f %z
+ifeq ($(SYSTEM), Windows_NT)
+	# If windows we will use an script for calculating filesize.
+	FILESIZE = filesize.bat
+else ifeq ($(SYSTEM), Darwin)
+	# Variable declaration for Mac OS X (BSD stat).
+	FILESIZE = stat -f %z
 else
-	# Default settings for remaining operating systems (GNU stat)
-	STATSIZE=stat -c %s
+	# Default settings for remaining operating systems (GNU stat).
+	FILESIZE = stat -c %s
 endif
 
 # elsewise gcc would complain unnecessary
@@ -69,12 +69,12 @@ usbasploader.o: usbasploader.raw $(DEPENDS)
 
 updater.o: updater.c usbasploader.h usbasploader.raw usbasploader.o $(DEPENDS)
 ifndef UPDATECRC32
-	$(CC) updater.c -c -o updater.o -DSIZEOF_new_firmware=$(shell $(STATSIZE) usbasploader.raw) $(CFLAGS)
+	$(CC) updater.c -c -o updater.o -DSIZEOF_new_firmware=$(shell $(FILESIZE) usbasploader.raw) $(CFLAGS)
 else
 ifeq ($(UPDATECRC32), 0)
-	$(CC) updater.c -c -o updater.o -DSIZEOF_new_firmware=$(shell $(STATSIZE) usbasploader.raw) -DUPDATECRC32=0x$(shell crc32 usbasploader.raw) $(CFLAGS)
+	$(CC) updater.c -c -o updater.o -DSIZEOF_new_firmware=$(shell $(FILESIZE) usbasploader.raw) -DUPDATECRC32=0x$(shell crc32 usbasploader.raw) $(CFLAGS)
 else
-	$(CC) updater.c -c -o updater.o -DSIZEOF_new_firmware=$(shell $(STATSIZE) usbasploader.raw) -DUPDATECRC32=$(UPDATECRC32) $(CFLAGS)
+	$(CC) updater.c -c -o updater.o -DSIZEOF_new_firmware=$(shell $(FILESIZE) usbasploader.raw) -DUPDATECRC32=$(UPDATECRC32) $(CFLAGS)
 endif
 endif
 # 	$(CC) updater.c -c -o updater.o $(CFLAGS)
