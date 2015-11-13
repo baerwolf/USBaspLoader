@@ -7,6 +7,17 @@
 
 include ../Makefile.inc
 
+ifeq ($(SYSTEM), Windows_NT)
+	# If windows we will use an script for calculating filesize.
+	FILESIZE = filesize.bat
+else ifeq ($(SYSTEM), Darwin)
+	# Variable declaration for Mac OS X (BSD stat).
+	FILESIZE = stat -f %z
+else
+	# Default settings for remaining operating systems (GNU stat).
+	FILESIZE = stat -c %s
+endif
+
 # elsewise gcc would complain unnecessary
 CFLAGS = -Wall -Wno-pointer-to-int-cast -Os -g3 -ggdb -fno-move-loop-invariants -fno-tree-scev-cprop -fno-inline-small-functions -I. -mmcu=$(DEVICE) -DF_CPU=$(F_CPU) -DBOOTLOADER_ADDRESS=$(BOOTLOADER_ADDRESS) -DNEW_BOOTLOADER_ADDRESS=$(NEW_BOOTLOADER_ADDRESS) -DFLASHADDRESS=$(FLASHADDRESS) $(DEFINES)
 LDFLAGS = -Wl,--relax,--gc-sections
@@ -58,12 +69,12 @@ usbasploader.o: usbasploader.raw $(DEPENDS)
 
 updater.o: updater.c usbasploader.h usbasploader.raw usbasploader.o $(DEPENDS)
 ifndef UPDATECRC32
-	$(CC) updater.c -c -o updater.o -DSIZEOF_new_firmware=$(shell stat -c %s usbasploader.raw) $(CFLAGS)
+	$(CC) updater.c -c -o updater.o -DSIZEOF_new_firmware=$(shell $(FILESIZE) usbasploader.raw) $(CFLAGS)
 else
 ifeq ($(UPDATECRC32), 0)
-	$(CC) updater.c -c -o updater.o -DSIZEOF_new_firmware=$(shell stat -c %s usbasploader.raw) -DUPDATECRC32=0x$(shell crc32 usbasploader.raw) $(CFLAGS)
+	$(CC) updater.c -c -o updater.o -DSIZEOF_new_firmware=$(shell $(FILESIZE) usbasploader.raw) -DUPDATECRC32=0x$(shell crc32 usbasploader.raw) $(CFLAGS)
 else
-	$(CC) updater.c -c -o updater.o -DSIZEOF_new_firmware=$(shell stat -c %s usbasploader.raw) -DUPDATECRC32=$(UPDATECRC32) $(CFLAGS)
+	$(CC) updater.c -c -o updater.o -DSIZEOF_new_firmware=$(shell $(FILESIZE) usbasploader.raw) -DUPDATECRC32=$(UPDATECRC32) $(CFLAGS)
 endif
 endif
 # 	$(CC) updater.c -c -o updater.o $(CFLAGS)

@@ -355,10 +355,35 @@ NEW_BOOTLOADER_ADDRESS = $(BOOTLOADER_ADDRESS)
 AVRPATH = $(AVR8TOOLCHAINBINDIR)
 AVRDUDE = $(AVRDUDEBINDIR)avrdude $(PROGRAMMER) -p $(DEVICE)
 
+# Platform
+# Check operative system.
+# Check if we are on Windows.
+ifeq ($(OS), Windows_NT)
+  SYSTEM := Windows_NT
+  # Check if although we are on a windows machine it's a linux-like
+  # environment (Cygwin/Mingw or similar).
+  ifeq (marks,$(shell echo "marks"))
+    SYSTEM := Linux
+  endif
+else
+  UNAME := $(shell uname -s)
+  # Check if it's a OS X system.
+  ifeq ($(UNAME), Darwin)
+    SYSTEM := Darwin
+  # Default as Linux.
+  else
+    SYSTEM := Linux
+  endif
+endif
+
 ECHO=@echo
 GCC=@gcc
 MAKE=@make
-RM=@rm -f
+ifeq ($(SYSTEM), Windows_NT)
+  RM=@del /F /Q
+else
+  RM=@rm -f
+endif
 
 CC=@$(AVRPATH)avr-gcc
 OBC=@$(AVRPATH)avr-objcopy
