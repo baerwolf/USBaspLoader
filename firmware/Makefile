@@ -67,7 +67,10 @@ read_fuses:
 	$(UISP) --rd_fuses
 
 deepclean: clean
+ifeq ($(HOSTOS), Windows_NT)
+else
 	$(RM) *~
+endif
 
 clean: 
 	$(RM) main.hex
@@ -76,10 +79,17 @@ clean:
 	$(RM) main.elf
 	$(RM) main.o
 	$(RM) main.s
+ifeq ($(HOSTOS), Windows_NT)
+	$(RM) usbdrv\usbdrvasm.o
+	$(RM) usbdrv\oddebug.o
+	$(RM) usbdrv\oddebug.s
+	$(RM) usbdrv\usbdrv.s
+else
 	$(RM) usbdrv/usbdrvasm.o
 	$(RM) usbdrv/oddebug.o
 	$(RM) usbdrv/oddebug.s
 	$(RM) usbdrv/usbdrv.s
+endif
 
 # file targets:
 main.elf: usbdrv/usbdrvasm.o usbdrv/oddebug.o main.o $(DEPENDS)

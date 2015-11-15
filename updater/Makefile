@@ -93,7 +93,10 @@ updater.hex: updater.elf updater.asm $(DEPENDS)
 	$(ECHO) "."
 
 deepclean: clean
+ifeq ($(HOSTOS), Windows_NT)
+else
 	$(RM) *~
+endif
 
 clean:
 	$(RM) usbasploader.o
