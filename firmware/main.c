@@ -170,9 +170,9 @@ static const uchar  signatureBytes[4] = {
 #elif defined (__AVR_ATmega48PA__)
     #error ATmega48 does not support bootloaders!
     0x1e, 0x92, 0x0A, 0
-#elif defined (__AVR_ATmega88__) || defined (__AVR_ATmega88A__) || defined (__AVR_ATmega88P__)
+#elif defined (__AVR_ATmega88__) || defined (__AVR_ATmega88A__)
     0x1e, 0x93, 0x0a, 0
-#elif defined (__AVR_ATmega88PA__)
+#elif defined (__AVR_ATmega88PA__) || defined (__AVR_ATmega88P__)
     0x1e, 0x93, 0x0F, 0
 #elif defined (__AVR_ATmega162__)
     0x1e, 0x94, 0x04, 0
