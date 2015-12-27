@@ -315,8 +315,8 @@ these macros are defined, the boot loader usees them.
  * 
  * Examples (USB pinning are defaults from this file):
  * 
- * "ATmega8@16MHz powered with 5V and no watchdog fused":		0xf3078317
- * The same just for ATmega328p: 					0xf50f8317
+ * "ATmega8@16MHz powered with 5V and no watchdog fused":		0xf3074317
+ * The same just for ATmega328p: 					0xf50f4317
  * 
  * "ATmega1024p @ 20MHz powered with 3V and watchdog fused active":	0xf705fb17
  * "ATmega2560  @ 12MHz powered with 5V and watchdog fused active":	0xf8010307
