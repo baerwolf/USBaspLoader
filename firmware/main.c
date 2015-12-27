@@ -164,11 +164,11 @@ static const uchar  signatureBytes[4] = {
     0x1e, 0x94, 0x03, 0
 #elif defined (__AVR_ATmega32__)
     0x1e, 0x95, 0x02, 0
-#elif defined (__AVR_ATmega48__) || defined (__AVR_ATmega48A__) || defined (__AVR_ATmega48P__)
+#elif defined (__AVR_ATmega48__) || defined (__AVR_ATmega48A__)
     #error ATmega48 does not support bootloaders!
     0x1e, 0x92, 0x05, 0
-#elif defined (__AVR_ATmega48PA__)
-    #error ATmega48 does not support bootloaders!
+#elif defined (__AVR_ATmega48PA__) || defined (__AVR_ATmega48P__)
+    #error ATmega48P does not support bootloaders!
     0x1e, 0x92, 0x0A, 0
 #elif defined (__AVR_ATmega88__) || defined (__AVR_ATmega88A__)
     0x1e, 0x93, 0x0a, 0
@@ -180,9 +180,9 @@ static const uchar  signatureBytes[4] = {
     0x1e, 0x94, 0x0f, 0
 #elif defined (__AVR_ATmega164P__) || defined (__AVR_ATmega164PA__)
     0x1e, 0x94, 0x0a, 0
-#elif defined (__AVR_ATmega168__) || defined (__AVR_ATmega168A__) || defined (__AVR_ATmega168P__)
+#elif defined (__AVR_ATmega168__) || defined (__AVR_ATmega168A__)
     0x1e, 0x94, 0x06, 0
-#elif defined (__AVR_ATmega168PA__)
+#elif defined (__AVR_ATmega168PA__) || defined (__AVR_ATmega168P__)
     0x1e, 0x94, 0x0B, 0
 #elif defined (__AVR_ATmega324A__)
     0x1e, 0x95, 0x15, 0
