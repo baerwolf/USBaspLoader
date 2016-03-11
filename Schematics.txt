@@ -44,7 +44,7 @@ original JUMPER-logic within original USBaspLoader 2010-07-27.
 However most of the new logic is compatible with old JUMPER schematics:
 
 When RESET/PowerUP while BUTTON is pressed (PIN12 is low), then bootloader
-will start. Even if the BUTTON is release after this and PIN12 becomes HIGH,
+will start. Even if the BUTTON is released after this and PIN12 becomes HIGH,
 the bootloader stays active and listens to commands as long as the BUTTON 
 will be pressed (and so PIN12 becomes low) again...
 
@@ -58,4 +58,4 @@ for default atmega8 recommended MCU-settings are:
 
 LFUSE: 0x1f
 HFUSE: 0xc0
-LOCK : 0x3f (unchanged - the bootsection is proceteced via loader software)
+LOCK : 0x3f (unchanged - the bootsection is protected via loader software)
