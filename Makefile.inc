@@ -7,7 +7,7 @@
 
 F_CPU = 16000000
 DEVICE = atmega32
-
+#test
 # where the updating firmware should be located (starting address)
 FLASHADDRESS = 0x0000
 
